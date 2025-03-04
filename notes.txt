@@ -1,0 +1,188 @@
+import prettable using pip install - pip install prettytable
+import reportlab using pip install - pip install reportlab
+
+
+
+import pickle
+from prettytable import PrettyTable
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+# Task class to represent individual tasks
+class Task:
+    def __init__(self, task_id, description, due_date, status):
+        self.task_id = task_id
+        self.description = description
+        self.due_date = due_date
+        self.status = status
+
+    def __repr__(self):
+        return f"Task(ID: {self.task_id}, Description: {self.description}, Due: {self.due_date}, Status: {self.status})"
+
+--------------------------------------------------------------------------------------
+
+# TaskManager class to handle all task-related operations
+class TaskManager:
+    def __init__(self, filename='tasks.pkl'):
+        self.filename = filename
+        self.tasks = self.load_tasks()
+
+    def load_tasks(self):
+        """Load tasks from a file (if it exists), else return an empty list."""
+        try:
+            with open(self.filename, 'rb') as f:
+                return pickle.load(f)
+        except (FileNotFoundError, EOFError):
+            return []
+
+    def save_tasks(self):
+        """Save tasks to the file."""
+        with open(self.filename, 'wb') as f:
+            pickle.dump(self.tasks, f)
+
+    def add_task(self, description, due_date, status='Pending'):
+        """Add a new task."""
+        task_id = len(self.tasks) + 1
+        task = Task(task_id, description, due_date, status)
+        self.tasks.append(task)
+        self.save_tasks()
+
+    def update_task(self, task_id, description=None, due_date=None, status=None):
+        """Update an existing task."""
+        for task in self.tasks:
+            if task.task_id == task_id:
+                if description:
+                    task.description = description
+                if due_date:
+                    task.due_date = due_date
+                if status:
+                    task.status = status
+                self.save_tasks()
+                return True
+        return False
+
+    def delete_task(self, task_id):
+        """Delete a task."""
+        self.tasks = [task for task in self.tasks if task.task_id != task_id]
+        self.save_tasks()
+
+    def display_tasks(self):
+        """Display all tasks in a tabular format using PrettyTable."""
+        table = PrettyTable()
+        table.field_names = ["Task ID", "Description", "Due Date", "Status"]
+        
+        for task in self.tasks:
+            table.add_row([task.task_id, task.description, task.due_date, task.status])
+
+        print(table)
+
+    def generate_pdf(self, filename="tasks_report.pdf"):
+        """Generate a PDF with current tasks and completed tasks separately."""
+        c = canvas.Canvas(filename, pagesize=letter)
+        width, height = letter
+
+        current_tasks = [task for task in self.tasks if task.status != "Completed"]
+        completed_tasks = [task for task in self.tasks if task.status == "Completed"]
+
+        # Title
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(72, height - 72, "Task Manager Report")
+        
+        # Current Tasks
+        y_position = height - 100
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(72, y_position, "Current Tasks")
+        y_position -= 20
+
+        # Task table for current tasks
+        c.setFont("Helvetica", 10)
+        for task in current_tasks:
+            c.drawString(72, y_position, f"ID: {task.task_id}, Description: {task.description}, Due: {task.due_date}, Status: {task.status}")
+            y_position -= 15
+            if y_position < 100:  # Check if space is over, and create a new page
+                c.showPage()
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(72, height - 72, "Task Manager Report - Continued")
+                y_position = height - 100
+                c.setFont("Helvetica", 10)
+
+        # Completed Tasks
+        if completed_tasks:
+            y_position -= 20
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(72, y_position, "Completed Tasks")
+            y_position -= 20
+
+            c.setFont("Helvetica", 10)
+            for task in completed_tasks:
+                c.drawString(72, y_position, f"ID: {task.task_id}, Description: {task.description}, Due: {task.due_date}, Status: {task.status}")
+                y_position -= 15
+                if y_position < 100:
+                    c.showPage()
+                    c.setFont("Helvetica-Bold", 12)
+                    c.drawString(72, height - 72, "Task Manager Report - Continued")
+                    y_position = height - 100
+                    c.setFont("Helvetica", 10)
+
+        c.save()
+------------------------------------------------------------------------------------------------------
+# Main program flow
+def main():
+    manager = TaskManager()
+
+    while True:
+        print("\nTask Manager")
+        print("1. Add Task")
+        print("2. Update Task")
+        print("3. Delete Task")
+        print("4. Display All Tasks")
+        print("5. Generate PDF Report")
+        print("6. Exit")
+        
+        choice = input("Choose an option: ")
+
+        if choice == '1':
+            description = input("Enter task description: ")
+            due_date = input("Enter due date (YYYY-MM-DD): ")
+            manager.add_task(description, due_date)
+            print("Task added successfully!")
+
+        elif choice == '2':
+            task_id = int(input("Enter task ID to update: "))
+            description = input("Enter new description (leave blank to keep current): ")
+            due_date = input("Enter new due date (leave blank to keep current): ")
+            status = input("Enter new status (leave blank to keep current): ")
+
+            updated = manager.update_task(task_id, description if description else None, 
+                                          due_date if due_date else None, 
+                                          status if status else None)
+            if updated:
+                print("Task updated successfully!")
+            else:
+                print("Task not found!")
+
+        elif choice == '3':
+            task_id = int(input("Enter task ID to delete: "))
+            manager.delete_task(task_id)
+            print("Task deleted successfully!")
+
+        elif choice == '4':
+            manager.display_tasks()
+
+        elif choice == '5':
+            filename = input("Enter the filename for the PDF (default: tasks_report.pdf): ")
+            if not filename:
+                filename = "tasks_report.pdf"
+            manager.generate_pdf(filename)
+            print(f"PDF report generated: {filename}")
+
+        elif choice == '6':
+            print("Exiting Task Manager...")
+            break
+
+        else:
+            print("Invalid option. Please try again.")
+
+if __name__ == "__main__":
+    main()
+
