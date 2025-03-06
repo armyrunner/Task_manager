@@ -11,9 +11,15 @@ class Task_Manager:
         self.filename = filename
         self.tasks = self.load_tasks()
         
+    
+    def create_file(self):
+        with open(self.filename,'wb') as f:
+            pickle.dump({},f)
+        return True
 
     # load task function
     def load_tasks(self):
+        self.create_file()
         try:
             with open(self.filename,'rb') as f:
                 return pickle.load(f)
