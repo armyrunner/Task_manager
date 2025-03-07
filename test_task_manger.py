@@ -15,14 +15,8 @@ class TestTaskManager(unittest.TestCase):
          if os.path.exists(self.test_filename):
              os.remove(self.test_filename)
 
-
-    def test_01_create_file(self):
-        #Test create pickle file
-        fileCreated = self.manager.create_file()
-        self.assertTrue(fileCreated,'Was Created')
-
         
-    def test_02_add_task(self):
+    def test_01_add_task(self):
         """Test adding a task."""
         self.manager.add_task("Test Task 1", "2025-03-10","pending")
         self.assertEqual(len(self.manager.tasks), 1)

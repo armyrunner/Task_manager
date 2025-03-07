@@ -1,4 +1,5 @@
 import pickle
+import os
 from prettytable import PrettyTable
 # from reportlab.lib.pagesizes import letter
 # from reportlab.pdfgen import canvas
@@ -11,19 +12,15 @@ class Task_Manager:
         self.filename = filename
         self.tasks = self.load_tasks()
         
-    
-    def create_file(self):
-        with open(self.filename,'wb') as f:
-            pickle.dump({},f)
-        return True
-
-    # load task function
+        # load task function
     def load_tasks(self):
-        self.create_file()
+        if not os.path.exists(self.filename):
+            with open(self.filename,'wb') as f:
+                pickle.dump([],f)
         try:
             with open(self.filename,'rb') as f:
                 return pickle.load(f)
-        except (FileExistsError, EOFError ):
+        except (EOFError):
             return []
     
     # save task function
@@ -32,17 +29,22 @@ class Task_Manager:
             pickle.dump(self.tasks,f)
     
     # add task function
-    def add_task(self,task_description=None,due_date = None,status = None):
+    def add_task(self,task_description=None,due_date = None,status ='Not Started'):
         task_id = len(self.tasks) + 1
         tasks = Task(task_id,task_description,due_date,status)
-        self.tasks.append(tasks)
+        self.tasks.append(tasks)        
         self.save_task()
 
     # update task function
-    def update_task(self,task_id,task_description = None,due_date = None,status = None):
-        for tasks in self.tasks:
-            if task_id == tasks.task_id:
-                Task(task_id,task_description,due_date,status)
+    def update_task(self,task_id,task_description = None,due_date = None,status ='Not Started'):
+        for task in self.tasks:
+            if task_id == task.task_id:
+                if task_description:
+                    task.task_description = task_description
+                if due_date:
+                    task.due_date = due_date
+                if status:
+                    task.status = status
                 self.save_task()
                 return True
             return False
@@ -53,12 +55,14 @@ class Task_Manager:
         self.save_tasks()
 
     def display_tasks(self):
-        table = PrettyTable
+        table = PrettyTable()
         table.field_names = ["Task Id","Description","Due Date","Status"]
 
-        for tasks in self.tasks:
-            tasks = [tasks.task_id,tasks.task_description,tasks.due_date,tasks.status]
+        for task in self.tasks:
+            table.add_row([task.task_id,task.task_description,task.due_date,task.status])
 
         print(table)            
 
     # generate pdf function
+    def generate_pdf(self):
+        pass

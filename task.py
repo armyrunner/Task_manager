@@ -1,7 +1,7 @@
 
 class Task:
 
-    def __init__(self,task_id,task_description,due_date,status):
+    def __init__(self,task_id,task_description,due_date,status='Not Started'):
         self.task_id = task_id
         self.task_description = task_description
         self.due_date = due_date
