@@ -47,7 +47,7 @@ class Task_Manager:
                     task.status = status
                 self.save_task()
                 return True
-            return False
+        return False
 
     # delete task function
     def delete_task(self,task_id):
