@@ -1,8 +1,7 @@
 import pickle
 import os
+
 from prettytable import PrettyTable
-# from reportlab.lib.pagesizes import letter
-# from reportlab.pdfgen import canvas
 from task import Task
 
 class Task_Manager:
@@ -24,28 +23,32 @@ class Task_Manager:
             return []
     
     # save task function
-    def save_task(self):
+    def save_tasks(self):
         with open(self.filename,'wb') as f:
             pickle.dump(self.tasks,f)
     
     # add task function
-    def add_task(self,task_description=None,due_date = None,status ='Not Started'):
+    def add_task(self,task_description="",due_date = "",start_date="",finish_date="",status ='Not Started'):
         task_id = len(self.tasks) + 1
-        tasks = Task(task_id,task_description,due_date,status)
+        tasks = Task(task_id,task_description,due_date,start_date,finish_date,status)
         self.tasks.append(tasks)        
-        self.save_task()
+        self.save_tasks()
 
     # update task function
-    def update_task(self,task_id,task_description = None,due_date = None,status ='Not Started'):
+    def update_task(self,task_id,task_description = "",due_date = "",start_date="",finish_date="",status ='Not Started'):
         for task in self.tasks:
             if task_id == task.task_id:
                 if task_description:
                     task.task_description = task_description
                 if due_date:
                     task.due_date = due_date
+                if start_date:
+                    task.start_date = start_date
+                if finish_date:
+                    task.finish_date = finish_date
                 if status:
                     task.status = status
-                self.save_task()
+                self.save_tasks()
                 return True
         return False
 
@@ -56,13 +59,14 @@ class Task_Manager:
 
     def display_tasks(self):
         table = PrettyTable()
-        table.field_names = ["Task Id","Description","Due Date","Status"]
+        table.field_names = ["Task Id","Description","Due Date","Start Date","Finish Date","Status"]
 
         for task in self.tasks:
-            table.add_row([task.task_id,task.task_description,task.due_date,task.status])
+            table.add_row([task.task_id,task.task_description,task.due_date,task.start_date,task.finish_date,task.status])
 
         print(table)            
 
     # generate pdf function
     def generate_pdf(self):
+
         pass

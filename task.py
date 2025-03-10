@@ -1,10 +1,12 @@
 
 class Task:
 
-    def __init__(self,task_id,task_description,due_date,status='Not Started'):
+    def __init__(self,task_id,task_description,due_date= "",start_date="",finish_date="",status='Not Started'):
         self.task_id = task_id
         self.task_description = task_description
         self.due_date = due_date
+        self.start_date = start_date
+        self.finish_date = finish_date
         self.status = status
         
     def __rper__(self):
