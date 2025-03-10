@@ -3,6 +3,7 @@ import os
 
 from prettytable import PrettyTable
 from task import Task
+from pdf_generator import PDF_Generator
 
 class Task_Manager:
 
@@ -68,5 +69,4 @@ class Task_Manager:
 
     # generate pdf function
     def generate_pdf(self):
-
         pass
