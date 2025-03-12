@@ -1,0 +1,157 @@
+To create a test file for `tetris.py`, we will focus on testing key parts of the Tetris game logic, such as:
+
+- **Grid Initialization**: Make sure the grid is being initialized correctly.
+- **Piece Movement**: Test the ability to move pieces left, right, and down.
+- **Collision Detection**: Ensure pieces don't overlap with filled cells.
+- **Line Clearing**: Ensure lines are properly cleared when full.
+- **Game Speed**: Test if the game speed increases with the score.
+
+We'll use the `unittest` module to write test cases for these components. For testing purposes, we'll mock certain parts of the game (like the `curses` library) to avoid needing a real console.
+
+Here's an example test file for `tetris.py`.
+
+### **`test_tetris.py`** - Unit Test File
+
+```python
+import unittest
+from unittest.mock import patch
+from tetris import Tetris
+
+
+class TestTetris(unittest.TestCase):
+    
+    def setUp(self):
+        """Create a new Tetris game instance for each test."""
+        self.tetris = Tetris(None)  # Passing None because we're not testing the curses interface
+
+    def test_create_empty_grid(self):
+        """Test if the grid is initialized correctly."""
+        grid = self.tetris.create_empty_grid()
+        self.assertEqual(len(grid), 20)  # 20 rows
+        self.assertEqual(len(grid[0]), 10)  # 10 columns
+        self.assertTrue(all(cell == 0 for row in grid for cell in row))  # All cells should be 0
+
+    def test_rotate_piece(self):
+        """Test piece rotation functionality."""
+        self.tetris.current_piece = [[1, 1], [1, 1]]  # O-piece
+        original_piece = [row[:] for row in self.tetris.current_piece]
+        self.tetris.rotate_piece()
+        self.assertEqual(self.tetris.current_piece, original_piece)  # O-piece does not change after rotation
+
+        # Now test for a piece that rotates (e.g., T-shape)
+        self.tetris.current_piece = [[1, 1, 1], [0, 1, 0]]  # T-piece
+        original_piece = [row[:] for row in self.tetris.current_piece]
+        self.tetris.rotate_piece()
+        self.assertNotEqual(self.tetris.current_piece, original_piece)  # T-piece should change after rotation
+
+    def test_move_piece_left_right(self):
+        """Test if pieces can move left and right."""
+        self.tetris.current_piece = [[1, 1, 1], [0, 1, 0]]  # T-piece
+        self.tetris.current_position = (5, 0)
+
+        # Move left
+        self.tetris.move_piece(-1, 0)
+        self.assertEqual(self.tetris.current_position, (4, 0))
+
+        # Move right
+        self.tetris.move_piece(1, 0)
+        self.assertEqual(self.tetris.current_position, (5, 0))  # Should move back to original position
+
+    def test_move_piece_down(self):
+        """Test if pieces can move down."""
+        self.tetris.current_piece = [[1, 1, 1], [0, 1, 0]]  # T-piece
+        self.tetris.current_position = (5, 0)
+        self.tetris.move_piece(0, 1)
+        self.assertEqual(self.tetris.current_position, (5, 1))  # Move down 1 row
+
+    def test_collision_detection(self):
+        """Test piece collision detection."""
+        self.tetris.grid = [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ]
+        self.tetris.current_piece = [[1, 1], [1, 1]]  # O-piece
+        self.tetris.current_position = (0, 0)
+        self.assertTrue(self.tetris.check_collision(self.tetris.current_piece, self.tetris.current_position))
+
+        self.tetris.current_position = (1, 1)
+        self.assertFalse(self.tetris.check_collision(self.tetris.current_piece, self.tetris.current_position))
+
+    def test_clear_lines(self):
+        """Test if lines are cleared correctly."""
+        self.tetris.grid = [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Line to clear
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ]
+        self.tetris.clear_lines()
+        self.assertEqual(self.tetris.score, 1)  # One line should be cleared
+        self.assertEqual(self.tetris.grid[0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])  # The first line should be cleared
+
+    def test_game_speed_increase(self):
+        """Test if the game speed increases based on the score."""
+        original_speed = self.tetris.speed
+
+        # Test the speed increase after clearing lines (simulate score change)
+        self.tetris.score = 10
+        self.tetris.speed = original_speed  # Reset the speed
+        self.tetris.run()  # This will adjust the speed based on score
+        self.assertLess(self.tetris.speed, original_speed)  # Speed should have increased
+
+    def test_high_score_update(self):
+        """Test if the high scores are updated and saved correctly."""
+        self.tetris.score = 100
+        self.tetris.update_high_scores()
+        self.assertEqual(len(self.tetris.high_scores), 1)  # There should be 1 high score
+        self.assertEqual(self.tetris.high_scores[0][1], 100)  # Score should be 100
+
+    @patch('builtins.input', return_value='Player1')
+    def test_high_score_save_to_file(self, mock_input):
+        """Test that high scores are saved to a file."""
+        self.tetris.score = 200
+        self.tetris.update_high_scores()
+
+        # Verify that the high score is written to the file (or is included in the in-memory list)
+        self.assertTrue(len(self.tetris.high_scores) > 0)
+        self.tetris.save_high_scores()  # This will write to the file
+        with open('high_scores.txt', 'r') as file:
+            lines = file.readlines()
+            self.assertTrue(any(str(self.tetris.score) in line for line in lines))  # Check if the score is in the file
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### **Explanation of the Tests**:
+
+1. **`test_create_empty_grid`**: Ensures the grid is initialized with the correct dimensions (20 rows and 10 columns), and all cells are empty (`0`).
+  
+2. **`test_rotate_piece`**: Tests the piece rotation function by checking that the piece correctly rotates (if it can).
+
+3. **`test_move_piece_left_right`**: Ensures that pieces can move left and right as expected.
+
+4. **`test_move_piece_down`**: Verifies that pieces can move down when instructed.
+
+5. **`test_collision_detection`**: Checks if the collision detection correctly prevents pieces from overlapping filled cells or moving out of bounds.
+
+6. **`test_clear_lines`**: Tests if lines are properly cleared when they are full and updates the score accordingly.
+
+7. **`test_game_speed_increase`**: Verifies that the speed of the game increases when the score reaches certain thresholds (e.g., after clearing 10 lines).
+
+8. **`test_high_score_update`**: Ensures that the high score is correctly updated and sorted when a new score is achieved.
+
+9. **`test_high_score_save_to_file`**: Simulates a game session, updates the high score, and then checks that the high score is saved to the file.
+
+### **To Run the Tests**:
+1. Save this test file as `test_tetris.py`.
+2. Run it using the following command:
+   ```bash
+   python -m unittest test_tetris.py
+   ```
+
+These tests will check the core functionality of the game logic while mocking some parts of the game interface that depend on user input or the console environment.

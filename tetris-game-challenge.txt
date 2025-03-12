@@ -1,0 +1,246 @@
+Sure! To turn your existing code into a Python GUI, we will use the `tkinter` library, which is commonly used for building graphical user interfaces in Python. We’ll also organize the code into multiple files as requested: one for the GUI, one for the `Task` class, and one for the `TaskManager` class. Here's how we can break it down:
+
+### File Structure:
+
+1. **task.py**: Contains the `Task` class.
+2. **task_manager.py**: Contains the `TaskManager` class.
+3. **task_manager_gui.py**: Contains the GUI code using `tkinter`.
+
+### 1. **task.py** - The Task class
+
+```python
+class Task:
+    def __init__(self, task_id, description, due_date, status):
+        self.task_id = task_id
+        self.description = description
+        self.due_date = due_date
+        self.status = status
+
+    def __repr__(self):
+        return f"Task(ID: {self.task_id}, Description: {self.description}, Due: {self.due_date}, Status: {self.status})"
+```
+
+### 2. **task_manager.py** - The TaskManager class
+
+```python
+import pickle
+from task import Task
+from prettytable import PrettyTable
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+class TaskManager:
+    def __init__(self, filename='tasks.pkl'):
+        self.filename = filename
+        self.tasks = self.load_tasks()
+
+    def load_tasks(self):
+        """Load tasks from a file (if it exists), else return an empty list."""
+        try:
+            with open(self.filename, 'rb') as f:
+                return pickle.load(f)
+        except (FileNotFoundError, EOFError):
+            return []
+
+    def save_tasks(self):
+        """Save tasks to the file."""
+        with open(self.filename, 'wb') as f:
+            pickle.dump(self.tasks, f)
+
+    def add_task(self, description, due_date, status='Pending'):
+        """Add a new task."""
+        task_id = len(self.tasks) + 1
+        task = Task(task_id, description, due_date, status)
+        self.tasks.append(task)
+        self.save_tasks()
+
+    def update_task(self, task_id, description=None, due_date=None, status=None):
+        """Update an existing task."""
+        for task in self.tasks:
+            if task.task_id == task_id:
+                if description:
+                    task.description = description
+                if due_date:
+                    task.due_date = due_date
+                if status:
+                    task.status = status
+                self.save_tasks()
+                return True
+        return False
+
+    def delete_task(self, task_id):
+        """Delete a task."""
+        self.tasks = [task for task in self.tasks if task.task_id != task_id]
+        self.save_tasks()
+
+    def display_tasks(self):
+        """Display all tasks in a tabular format using PrettyTable."""
+        table = PrettyTable()
+        table.field_names = ["Task ID", "Description", "Due Date", "Status"]
+        
+        for task in self.tasks:
+            table.add_row([task.task_id, task.description, task.due_date, task.status])
+
+        return table
+
+    def generate_pdf(self, filename="tasks_report.pdf"):
+        """Generate a PDF with current tasks and completed tasks separately."""
+        c = canvas.Canvas(filename, pagesize=letter)
+        width, height = letter
+
+        current_tasks = [task for task in self.tasks if task.status != "Completed"]
+        completed_tasks = [task for task in self.tasks if task.status == "Completed"]
+
+        # Title
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(72, height - 72, "Task Manager Report")
+        
+        # Current Tasks
+        y_position = height - 100
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(72, y_position, "Current Tasks")
+        y_position -= 20
+
+        # Task table for current tasks
+        c.setFont("Helvetica", 10)
+        for task in current_tasks:
+            c.drawString(72, y_position, f"ID: {task.task_id}, Description: {task.description}, Due: {task.due_date}, Status: {task.status}")
+            y_position -= 15
+            if y_position < 100:  # Check if space is over, and create a new page
+                c.showPage()
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(72, height - 72, "Task Manager Report - Continued")
+                y_position = height - 100
+                c.setFont("Helvetica", 10)
+
+        # Completed Tasks
+        if completed_tasks:
+            y_position -= 20
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(72, y_position, "Completed Tasks")
+            y_position -= 20
+
+            c.setFont("Helvetica", 10)
+            for task in completed_tasks:
+                c.drawString(72, y_position, f"ID: {task.task_id}, Description: {task.description}, Due: {task.due_date}, Status: {task.status}")
+                y_position -= 15
+                if y_position < 100:
+                    c.showPage()
+                    c.setFont("Helvetica-Bold", 12)
+                    c.drawString(72, height - 72, "Task Manager Report - Continued")
+                    y_position = height - 100
+                    c.setFont("Helvetica", 10)
+
+        c.save()
+```
+
+### 3. **task_manager_gui.py** - The GUI Code with Tkinter
+
+```python
+import tkinter as tk
+from tkinter import messagebox
+from task_manager import TaskManager
+
+class TaskManagerApp:
+    def __init__(self, root):
+        self.manager = TaskManager()
+        self.root = root
+        self.root.title("Task Manager")
+
+        # Define the UI elements
+        self.create_widgets()
+
+    def create_widgets(self):
+        # Listbox to display tasks
+        self.task_listbox = tk.Listbox(self.root, height=10, width=50, selectmode=tk.SINGLE)
+        self.task_listbox.grid(row=0, column=0, rowspan=6, columnspan=3, padx=10, pady=10)
+
+        # Buttons
+        self.add_button = tk.Button(self.root, text="Add Task", command=self.add_task)
+        self.add_button.grid(row=7, column=0, padx=10, pady=10)
+
+        self.update_button = tk.Button(self.root, text="Update Task", command=self.update_task)
+        self.update_button.grid(row=7, column=1, padx=10, pady=10)
+
+        self.delete_button = tk.Button(self.root, text="Delete Task", command=self.delete_task)
+        self.delete_button.grid(row=7, column=2, padx=10, pady=10)
+
+        self.generate_report_button = tk.Button(self.root, text="Generate PDF Report", command=self.generate_pdf)
+        self.generate_report_button.grid(row=8, column=0, columnspan=3, padx=10, pady=10)
+
+        # Refresh the listbox with tasks
+        self.refresh_task_listbox()
+
+    def refresh_task_listbox(self):
+        """Refresh the task list in the Listbox."""
+        self.task_listbox.delete(0, tk.END)
+        tasks = self.manager.display_tasks().get_string().splitlines()[2:]  # Get task lines only
+        for task in tasks:
+            self.task_listbox.insert(tk.END, task)
+
+    def add_task(self):
+        """Add a new task."""
+        description = tk.simpledialog.askstring("Task Description", "Enter task description:")
+        due_date = tk.simpledialog.askstring("Due Date", "Enter due date (YYYY-MM-DD):")
+        if description and due_date:
+            self.manager.add_task(description, due_date)
+            self.refresh_task_listbox()
+            messagebox.showinfo("Success", "Task added successfully!")
+        else:
+            messagebox.showwarning("Invalid Input", "Please provide both description and due date.")
+
+    def update_task(self):
+        """Update an existing task."""
+        selected_task = self.task_listbox.curselection()
+        if selected_task:
+            task_info = self.task_listbox.get(selected_task)
+            task_id = int(task_info.split()[0])  # Extract task ID from the listbox string
+            description = tk.simpledialog.askstring("Task Description", "Enter new task description:")
+            due_date = tk.simpledialog.askstring("Due Date", "Enter new due date (leave blank to keep current):")
+            status = tk.simpledialog.askstring("Status", "Enter new status (leave blank to keep current):")
+
+            updated = self.manager.update_task(task_id, description if description else None,
+                                               due_date if due_date else None,
+                                               status if status else None)
+            if updated:
+                self.refresh_task_listbox()
+                messagebox.showinfo("Success", "Task updated successfully!")
+            else:
+                messagebox.showwarning("Error", "Task not found.")
+        else:
+            messagebox.showwarning("No Selection", "Please select a task to update.")
+
+    def delete_task(self):
+        """Delete the selected task."""
+        selected_task = self.task_listbox.curselection()
+        if selected_task:
+            task_info = self.task_listbox.get(selected_task)
+            task_id = int(task_info.split()[0])  # Extract task ID
+            self.manager.delete_task(task_id)
+            self.refresh_task_listbox()
+            messagebox.showinfo("Success", "Task deleted successfully!")
+        else:
+            messagebox.showwarning("No Selection", "Please select a task to delete.")
+
+    def generate_pdf(self):
+        """Generate the PDF report."""
+        filename = tk.simpledialog.askstring("Filename", "Enter the filename for the PDF (default: tasks_report.pdf):")
+        if not filename:
+            filename = "tasks_report.pdf"
+        self.manager.generate_pdf(filename)
+        messagebox.showinfo("Success", f"PDF report generated: {filename}")
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = TaskManagerApp(root)
+    root.mainloop()
+```
+
+### Steps to Run:
+
+1. Save the provided classes (`Task`, `TaskManager`, and `TaskManagerApp`) in separate Python files (`task.py`, `task_manager.py`, and `task_manager_gui.py`).
+2. Install `tkinter` (if not already installed).
+3. Run `task_manager_gui.py` to launch the GUI.
+
+Now you can add, update, delete tasks, and generate PDF reports with an interactive GUI!
