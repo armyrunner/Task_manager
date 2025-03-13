@@ -20,7 +20,7 @@ class PDF_Generator():
         self.col_fontSize = 16
         self.data_fontSize = 12
 
-    def create_pdf(filename): 
+    def create_pdf(self): 
              
                
         #find the middle of the page to center the title of the report
@@ -34,7 +34,7 @@ class PDF_Generator():
 
         #creating the table for the document
         pdf_doc = SimpleDocTemplate(
-                filename,
+                self.filename,
                 pagesizes=landscape(letter)
                 )
         task_table = Table(self.tasks) #Getting Data from Task_Manager

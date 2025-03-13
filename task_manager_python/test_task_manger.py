@@ -60,8 +60,18 @@ class TestTaskManager(unittest.TestCase):
         self.assertEqual(len(self.manager.tasks),6)                
 
  
+    def test_05_create_pdf_task_report(self):
+        self.manager.add_taskk("Test Task 1", "2025-03-10","2025-03-01","2025-03-10","Completed")
+        self.manager.add_task("Test Task 2", "2025-03-10","2025-03-01","2025-03-10","completed")
+        self.manager.add_task("Test Task 3", "2025-03-10","pending")
+        self.manager.add_task("Test Task 4", "2025-03-10","pending")
+        self.manager.add_task("Test Task 5", "2025-03-10")
+        self.manager.add_task("Test Task 6", "2025-03-10")
+        
+        pdfCreated = self.manager.generate_pdf()
 
-
+        self.assertTrue(pdfCreated,'The pdf was created')
+    
 
     if __name__ == '__main__':
         unittest.main()

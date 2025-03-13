@@ -11,8 +11,8 @@ class Task_Manager:
     def __init__(self,filename ='task.pkl'):
         self.filename = filename
         self.tasks = self.load_tasks()
-        self.cur_pdf_gen = pdf_generator.PDF_Generator('cur_task_list.pdf')
-        self.comp_pdf_gen = pdf_generator.PDF_Generator('comp_task_list.pdf')
+        self.cur_pdf_gen ='cur_task_list.pdf'
+        self.comp_pdf_gen = 'comp_task_list.pdf'
  
         
 
@@ -72,9 +72,17 @@ class Task_Manager:
         print(table)            
 
     # generate pdf function
-    def current_generate_pdf(self):
+    def generate_pdf(self):
         
-        self.cur_pdf_gen.create_pdf(self.tasks,self.cur_pdf_gen)
+        current_tasks = [task for task in self.tasks if task.status != "Completed" or task.status != 'completed']
+        completed_tasks = [task for task in self.tasks if task.status == "Completed" or task.status == 'completed']
+
+        if current_tasks:
+            pdf_generator.PDF_Generator(self.tasks,self.cur_pdf_gen,'Current Task List')
+            return True
+        elif completed_tasks:
+            pdf_generator.PDF_Generator(self.tasks,self.cur_pdf_gen,'Completed Task List')
+            return True
 
 
 

@@ -1,0 +1,120 @@
+To write a test case for the `generate_pdf` function in the `Task_Manager` class, we need to ensure that we are testing whether the PDF generation logic works as expected. The main focus here will be to verify that the function correctly identifies tasks and calls the `PDF_Generator` correctly, depending on whether the tasks are completed or not.
+
+We will mock the `PDF_Generator` class because we are not interested in actually creating PDF files during testing. Instead, we want to test the behavior of the `generate_pdf` function in `Task_Manager`.
+
+Below is a test file using the Go-style approach for unit testing in Python:
+
+### Test Setup
+We will use the `unittest` framework to test the functionality and `unittest.mock` to mock the `PDF_Generator` class.
+
+### `task_manager_test.py` - Test Cases for `generate_pdf`
+
+```python
+import unittest
+from unittest.mock import patch, MagicMock
+from task_manager import Task_Manager
+from task import Task
+from pdf_generator import PDF_Generator
+
+class TestTaskManager(unittest.TestCase):
+
+    @patch('pdf_generator.PDF_Generator')
+    def test_generate_pdf_for_current_tasks(self, MockPDFGenerator):
+        # Setup: Create Task_Manager instance and tasks
+        task_manager = Task_Manager(filename="test_task.pkl")
+        
+        task1 = Task(1, "Task 1", "2023-12-31", "2023-12-01", "2023-12-05", "Not Started")
+        task2 = Task(2, "Task 2", "2023-12-31", "2023-12-01", "2023-12-05", "In Progress")
+        
+        # Add tasks to task manager
+        task_manager.tasks = [task1, task2]
+
+        # Mock PDF generator to prevent actual PDF creation
+        mock_pdf_gen = MagicMock()
+        MockPDFGenerator.return_value = mock_pdf_gen
+
+        # Act: Generate PDF for current tasks
+        task_manager.generate_pdf()
+
+        # Assert: Check if the PDF generator was called with correct parameters
+        MockPDFGenerator.assert_called_once_with(
+            [task1, task2],  # The current tasks to be passed
+            task_manager.cur_pdf_gen,  # The output file name
+            'Current Task List'  # Title of the PDF
+        )
+
+    @patch('pdf_generator.PDF_Generator')
+    def test_generate_pdf_for_completed_tasks(self, MockPDFGenerator):
+        # Setup: Create Task_Manager instance and tasks
+        task_manager = Task_Manager(filename="test_task.pkl")
+        
+        task1 = Task(1, "Task 1", "2023-12-31", "2023-12-01", "2023-12-05", "Completed")
+        task2 = Task(2, "Task 2", "2023-12-31", "2023-12-01", "2023-12-05", "Completed")
+        
+        # Add tasks to task manager
+        task_manager.tasks = [task1, task2]
+
+        # Mock PDF generator to prevent actual PDF creation
+        mock_pdf_gen = MagicMock()
+        MockPDFGenerator.return_value = mock_pdf_gen
+
+        # Act: Generate PDF for completed tasks
+        task_manager.generate_pdf()
+
+        # Assert: Check if the PDF generator was called with correct parameters
+        MockPDFGenerator.assert_called_once_with(
+            [task1, task2],  # The completed tasks to be passed
+            task_manager.comp_pdf_gen,  # The output file name
+            'Completed Task List'  # Title of the PDF
+        )
+
+    @patch('pdf_generator.PDF_Generator')
+    def test_generate_pdf_when_no_tasks(self, MockPDFGenerator):
+        # Setup: Create Task_Manager instance with no tasks
+        task_manager = Task_Manager(filename="test_task.pkl")
+        
+        # No tasks in the task manager
+        task_manager.tasks = []
+
+        # Mock PDF generator to prevent actual PDF creation
+        mock_pdf_gen = MagicMock()
+        MockPDFGenerator.return_value = mock_pdf_gen
+
+        # Act: Generate PDF (this should not generate any PDF since there are no tasks)
+        task_manager.generate_pdf()
+
+        # Assert: Ensure PDF generator was never called
+        MockPDFGenerator.assert_not_called()
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Explanation of the Test Cases:
+
+1. **`test_generate_pdf_for_current_tasks`**:
+    - This test checks if the `generate_pdf` function correctly generates a PDF for tasks that are not marked as "Completed."
+    - We mock the `PDF_Generator` class to verify that it is called with the current tasks and that the correct file name (`cur_task_list.pdf`) and title (`Current Task List`) are passed.
+
+2. **`test_generate_pdf_for_completed_tasks`**:
+    - This test checks if the `generate_pdf` function correctly generates a PDF for tasks that are marked as "Completed."
+    - We mock the `PDF_Generator` class to verify that it is called with the completed tasks and that the correct file name (`comp_task_list.pdf`) and title (`Completed Task List`) are passed.
+
+3. **`test_generate_pdf_when_no_tasks`**:
+    - This test checks the case when there are no tasks in the task manager. In this case, the `generate_pdf` function should not generate any PDFs, and we assert that the `PDF_Generator` is not called.
+
+### Running the Tests:
+
+1. Save this test code as `task_manager_test.py`.
+2. Ensure that you have the necessary dependencies installed, such as `unittest` (which is built into Python) and any additional libraries (`mock`, `prettytable`, etc.).
+3. To run the tests, execute the following command:
+
+   ```bash
+   python -m unittest task_manager_test.py
+   ```
+
+   This will run all the test cases defined in the `task_manager_test.py` file.
+
+### Conclusion:
+
+This test suite checks various scenarios for the `generate_pdf` function in the `Task_Manager` class. By using mock objects for the `PDF_Generator`, we can test the functionality of the `generate_pdf` method without actually generating PDF files during the tests. This ensures that the method behaves as expected for different cases, such as generating PDFs for current tasks, completed tasks, and when there are no tasks.
