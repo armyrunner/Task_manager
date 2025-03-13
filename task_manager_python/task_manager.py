@@ -11,7 +11,11 @@ class Task_Manager:
     def __init__(self,filename ='task.pkl'):
         self.filename = filename
         self.tasks = self.load_tasks()
+        self.cur_pdf_gen = pdf_generator.PDF_Generator('cur_task_list.pdf')
+        self.comp_pdf_gen = pdf_generator.PDF_Generator('comp_task_list.pdf')
+ 
         
+
         # load task function
     def load_tasks(self):
         if not os.path.exists(self.filename):
@@ -68,5 +72,10 @@ class Task_Manager:
         print(table)            
 
     # generate pdf function
-    def generate_pdf(self):
-        pass
+    def current_generate_pdf(self):
+        
+        self.cur_pdf_gen.create_pdf(self.tasks,self.cur_pdf_gen)
+
+
+
+
