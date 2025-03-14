@@ -54,8 +54,9 @@ class PDF_Generator():
         styleConfig = TableStyle([
             ('BACKGROUND',(0,0),(3,0),colors.green),
             ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke), # the -1 is the end of the row no matter how long the row is
-            ('ALIGN',(0,0),(-1,-1),'CENTER') # (-1,-1) basically the whole table will be center aligned
-            ('FONTNAME', (0,0),(-1,0),' Courier-bold),
+            ('ALIGN',(0,0),(-1,-1),'CENTER'), # (-1,-1) basically the whole table will be center aligned
+            ('FONTNAME', (0,0),(-1,0),self.col_fontName),
+            ('FONTNAME',(0,1),(-1,-1),self.row_fontName),
             ('FONTSIZE',(0,0),(-1,0),14),
             ('BOTTOMPADDING',(0,0),(-1,0),12),
             ('BACKGROUND',(0,1),(-1,-1),bc),

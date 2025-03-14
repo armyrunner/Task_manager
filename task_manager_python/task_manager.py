@@ -3,7 +3,7 @@ import os
 
 from prettytable import PrettyTable
 from task import Task
-from pdf_generator import PDF_Generator
+from pdf_generator import PDF_Generator as pdf
 
 class Task_Manager:
 
@@ -13,7 +13,7 @@ class Task_Manager:
         self.tasks = self.load_tasks()
         self.cur_pdf_gen ='cur_task_list.pdf'
         self.comp_pdf_gen = 'comp_task_list.pdf'
- 
+        
         
 
         # load task function
@@ -78,10 +78,12 @@ class Task_Manager:
         completed_tasks = [task for task in self.tasks if task.status == "Completed" or task.status == 'completed']
 
         if current_tasks:
-            pdf_generator.PDF_Generator(self.tasks,self.cur_pdf_gen,'Current Task List')
-            return True
+            pdf(self.tasks,self.cur_pdf_gen,'Current Task List')
+
         elif completed_tasks:
-            pdf_generator.PDF_Generator(self.tasks,self.cur_pdf_gen,'Completed Task List')
+            
+            pdf(self.tasks,self.comp_pdf_gen,'Completed Task List')
+
             return True
 
 
