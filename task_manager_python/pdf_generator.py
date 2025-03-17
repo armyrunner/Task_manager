@@ -12,10 +12,10 @@ class PDF_Generator():
         self.width, self.height = landscape(letter)
         
         #set variables for the different function calls
-        self.curr_task_title = task_title
+        self.task_title = task_title
         self.fontName_title = 'Times-Roman'
-        self.col_fontName = 'Courier-bold'
-        self.row_fontName = 'Courier'
+        self.col_fontName = 'Helvetica-Bold'
+        self.row_fontName = 'Helvetica'
         self.fontSize_title = 20
         self.col_fontSize = 16
         self.data_fontSize = 12
@@ -24,27 +24,29 @@ class PDF_Generator():
              
                
         #find the middle of the page to center the title of the report
-        text_width = c.stringWidth(text,font_name,font_size)
-        x_pos = (width - text_width) / 2
-        y_pos = height - 40
+        text_width = self.canvas.stringWidth(self.task_title,self.fontName_title,self.fontSize_title)
+        x_pos = (self.width - text_width) / 2
+        y_pos = self.height - 40
 
         #Drawing the string on the document to see Title of Document
-        c.setFont(font_name,font_size)
-        c.drawString(x_pos,y_pos,text)
+        self.canvas.setFont(self.fontName_title,self.fontSize_title)
+        self.canvas.drawString(x_pos,y_pos,self.task_title)
 
         #creating the table for the document
         pdf_doc = SimpleDocTemplate(
                 self.filename,
                 pagesizes=landscape(letter)
                 )
-        task_table = Table(self.tasks) #Getting Data from Task_Manager
+        task_data = []
+        for task in self.tasks:
+            task_data.append([task.task_id,task.task_description,task.due_date,task.start_date,task.finish_date,task.status])
 
-        elems = []
-        elems.append(task_table) # puts all data onto the document
-        
+        task_table = Table([["Task ID","Task Description",
+                             "Due Date","Start Date","Finish Date","Status"]]+ task_data) #Getting Data from Task_Manager
+
         # adding alternating colors for the table for fancier table look.
         # adding boarder to the table as well.
-        rowNumb = len(task_table) #Data from Task Manager to determine how many rows
+        rowNumb = len(task_data) #Data from Task Manager to determine how many rows
         for i in range(1,rowNumb):
             if i % 2 == 0:
                 bc = colors.burlywood
@@ -62,8 +64,9 @@ class PDF_Generator():
             ('BACKGROUND',(0,1),(-1,-1),bc),
             ('GRID',(0,1),(-1,-1),2,colors.black),
             ])
-        table.setStyle(styleConfig) # set table with solid color for all table, with color for column names
+        task_table.setStyle(styleConfig) # set table with solid color for all table, with color for column names
         
-        c.save()
+        pdf_doc.build([task_table])
+        self.canvas.save()
 
 
