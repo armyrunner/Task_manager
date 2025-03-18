@@ -69,23 +69,10 @@ class Task_Manager:
         for task in self.tasks:
             table.add_row([task.task_id,task.task_description,task.due_date,task.start_date,task.finish_date,task.status])
 
-        print(table)            
+        print(table)          
 
-    # generate pdf function
+
     def generate_pdf(self):
-        
-        current_tasks = [task for task in self.tasks if task.status != "Completed" or task.status != 'completed']
-        completed_tasks = [task for task in self.tasks if task.status == "Completed" or task.status == 'completed']
-
-        if current_tasks:
-            pdf = PDF_Generator(self.tasks,self.cur_pdf_gen,'Current Task List')
-            pdf.create_pdf()
-
-        elif completed_tasks:
-            pdf = PDF_Generator(self.tasks,self.comp_pdf_gen,'Completed Task List')
-            pdf.create_pdf()
-        
-
-
+        PDF_Generator(self.load_tasks,)
 
 

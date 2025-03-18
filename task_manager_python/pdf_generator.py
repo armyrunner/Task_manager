@@ -3,16 +3,17 @@ from reportlab.pdfgen import canvas
 from reportlab.platypus import SimpleDocTemplate,Table,TableStyle
 from reportlab.lib import colors
 
+
+
 class PDF_Generator():
 
-    def __init__(self,tasks,filename,task_title):
-        self.filename = filename
+    def __init__(self,tasks):
         self.tasks = tasks
-        self.canvas = canvas.Canvas(filename,pagesize=landscape(letter))
         self.width, self.height = landscape(letter)
-        
+        self.filename = self.generate_filename()
+        self.canvas = canvas.Canvas(self.filename, pagesize=letter)
         #set variables for the different function calls
-        self.task_title = task_title
+        self.task_title = self.generate_task_title()
         self.fontName_title = 'Times-Roman'
         self.col_fontName = 'Helvetica-Bold'
         self.row_fontName = 'Helvetica'
@@ -20,8 +21,36 @@ class PDF_Generator():
         self.col_fontSize = 16
         self.data_fontSize = 12
 
+    
+    def generate_filename(self):
+        
+        current_tasks = [task for task in self.tasks if task.status != "Completed" or task.status != 'completed']
+        completed_tasks = [task for task in self.tasks if task.status == "Completed" or task.status == 'completed']
+
+        if current_tasks:
+            self.filename = 'cur_task_list.pdf'
+        elif completed_tasks:
+            self.filename = 'comp_task_list.pdf'
+        else:
+            self.filename = 'task_report.pdf'
+
+    def generate_task_title(self):
+        
+        current_tasks = [task for task in self.tasks if task.status != "Completed" or task.status != 'completed']
+        completed_tasks = [task for task in self.tasks if task.status == "Completed" or task.status == 'completed']
+
+        if current_tasks:
+            self.task_title = 'Current Task List'
+        elif completed_tasks:
+            self.task_title = 'Completed Task List'
+        else:
+            self.task_title = 'Task Report List'
+
+
     def create_pdf(self): 
-             
+
+        current_tasks = [task for task in self.tasks if task.status != "Completed" or task.status != 'completed']
+        completed_tasks = [task for task in self.tasks if task.status == "Completed" or task.status == 'completed']
                
         #find the middle of the page to center the title of the report
         text_width = self.canvas.stringWidth(self.task_title,self.fontName_title,self.fontSize_title)
@@ -37,16 +66,10 @@ class PDF_Generator():
                 self.filename,
                 pagesizes=landscape(letter)
                 )
-        task_data = []
-        for task in self.tasks:
-            task_data.append([task.task_id,task.task_description,task.due_date,task.start_date,task.finish_date,task.status])
-
-        task_table = Table([["Task ID","Task Description",
-                             "Due Date","Start Date","Finish Date","Status"]]+ task_data) #Getting Data from Task_Manager
-
+   
         # adding alternating colors for the table for fancier table look.
         # adding boarder to the table as well.
-        rowNumb = len(task_data) #Data from Task Manager to determine how many rows
+        rowNumb = len(current_tasks) #Data from Task Manager to determine how many rows
         for i in range(1,rowNumb):
             if i % 2 == 0:
                 bc = colors.burlywood
@@ -64,9 +87,9 @@ class PDF_Generator():
             ('BACKGROUND',(0,1),(-1,-1),bc),
             ('GRID',(0,1),(-1,-1),2,colors.black),
             ])
-        task_table.setStyle(styleConfig) # set table with solid color for all table, with color for column names
+        current_tasks.setStyle(styleConfig) # set table with solid color for all table, with color for column names
         
-        pdf_doc.build([task_table])
+        pdf_doc.build([current_tasks]])
         self.canvas.save()
 
 

@@ -1,6 +1,7 @@
 import unittest
 import os
 from task_manager import Task_Manager
+from pdf_generator import PDF_Generator
 
 class TestTaskManager(unittest.TestCase):
 
@@ -9,6 +10,7 @@ class TestTaskManager(unittest.TestCase):
         # We use a temporary file for testing to avoid messing with actual data files
         self.test_filename = "test_tasks.pkl"
         self.manager = Task_Manager(self.test_filename)
+        
 
     def tearDown(self):
          """Clean up after each test."""
