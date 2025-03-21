@@ -1,0 +1,97 @@
+To make the code even cleaner and more maintainable, we can break down the logic into smaller functions, eliminate redundant parts, and improve readability. Below is the refactored code with these improvements:
+
+### Further Refactored Code:
+
+```python
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+
+def generate_pdf(self, filename="tasks_report.pdf"):
+    """Generate a PDF with current tasks and completed tasks separately."""
+    doc = SimpleDocTemplate(filename, pagesize=letter)
+    elements = []
+
+    # Prepare task data
+    current_tasks = [task for task in self.tasks if task.status != "Completed"]
+    completed_tasks = [task for task in self.tasks if task.status == "Completed"]
+
+    # Add title
+    elements.append(self.create_title_table("Task Manager Report"))
+
+    # Add current tasks table if available
+    if current_tasks:
+        elements.append(self.create_task_table("Current Tasks", current_tasks))
+
+    # Add completed tasks table if available
+    if completed_tasks:
+        elements.append(self.create_task_table("Completed Tasks", completed_tasks))
+
+    # Build the document
+    doc.build(elements)
+
+def create_title_table(self, title):
+    """Create a table for the title of the document."""
+    title_table = Table([[title]])
+    title_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 16),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 20)
+    ]))
+    return title_table
+
+def create_task_table(self, section_title, tasks):
+    """Create a table for the list of tasks."""
+    # Header for task table
+    task_data = [["ID", "Description", "Due Date", "Status"]]
+    task_data.extend([[task.task_id, task.description, task.due_date, task.status] for task in tasks])
+
+    task_table = Table(task_data)
+    task_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black)
+    ]))
+
+    # Add the section title above the table
+    section_title_table = Table([[section_title]])
+    section_title_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10)
+    ]))
+
+    # Return both the section title and table in a list
+    return [section_title_table, task_table]
+```
+
+### Key Changes:
+1. **Modularized Functions:**
+   - `create_title_table`: Generates a table for the document title.
+   - `create_task_table`: Creates a table for any given section (either current or completed tasks).
+   
+2. **Simplified Logic:**
+   - The task data generation (`task_data`) for both sections is now done in a concise one-liner using list comprehension.
+   
+3. **Reduced Redundancy:**
+   - Both tables (current and completed tasks) now follow the same format and are handled by a single function (`create_task_table`). The only difference is the section title, which is passed as a parameter.
+
+4. **Cleaner Data Population:**
+   - Instead of appending each task row one by one, we generate the entire data set for the table in a more compact manner using list comprehension.
+
+5. **Structure and Formatting:**
+   - The title and each task table are formatted in a clean, readable way using `TableStyle`.
+
+### Benefits of the Refactor:
+- **Maintainability:** The code is now broken down into smaller, reusable functions, making it easier to maintain and extend.
+- **Readability:** The logic is more declarative, so it is easier to understand.
+- **DRY Principle:** The `create_task_table` function handles both current and completed tasks, eliminating duplication.
+- **Scalability:** Adding additional sections in the future (e.g., overdue tasks) would be easy by just calling the `create_task_table` function with different parameters.
+
+Let me know if you need further adjustments!
