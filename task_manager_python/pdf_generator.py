@@ -1,5 +1,4 @@
 from reportlab.lib.pagesizes import letter,landscape
-from reportlab.pdfgen import canvas
 from reportlab.platypus import SimpleDocTemplate,Table,TableStyle
 from reportlab.lib import colors
 
@@ -49,48 +48,79 @@ class PDF_Generator():
 
         return section_title_table
     
-    def create_task_table(self,section_title):
+    def create_task_table(self, section_title, tasks):
+        task_table_data = [["ID", "Task Description", "Due Date", "Start Date", "Finish Date", "Status"]]
+        # Add task data
+        task_table_data.extend([[task.task_id, task.task_description, task.due_date, task.start_date, task.finish_date, task.status] for task in tasks])
+        
+        # Create the table object
+        task_table = Table(task_table_data)
 
-        task_table_data = [["ID","Task Description","Due Date","Start Date","Finish Date","Status"]]
-        task_table_data.extend([[task['task_id'],task['task_description'],for task in self.tasks]]) 
-        # adding alternating colors for the table for fancier table look.
-        # adding boarder to the table as well.
-
-        rowNumb = len() #Data from Task Manager to determine how many rows
-        for i in range(1,rowNumb):
+        # Add alternating row colors for styling
+        rowNumb = len(task_table_data)
+        for i in range(1, rowNumb):
             if i % 2 == 0:
                 bc = colors.burlywood
             else:
                 bc = colors.beige
 
-        styleConfig = TableStyle([
-            ('BACKGROUND',(0,0),(3,0),colors.green),
-            ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke), # the -1 is the end of the row no matter how long the row is
-            ('ALIGN',(0,0),(-1,-1),'CENTER'), # (-1,-1) basically the whole table will be center aligned
-            ('FONTNAME', (0,0),(-1,0),self.col_fontName),
-            ('FONTNAME',(0,1),(-1,-1),self.row_fontName),
-            ('FONTSIZE',(0,0),(-1,0),14),
-            ('BOTTOMPADDING',(0,0),(-1,0),12),
-            ('BACKGROUND',(0,1),(-1,-1),bc),
-            ('GRID',(0,1),(-1,-1),2,colors.black),
-            ])
-        
-       current_tasks.setStyle(styleConfig) # set table with solid color for all table, with color for column names
+        styleConfig_tasks = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), self.row_fontName),
+            ('FONTSIZE', (0, 0), (-1, 0), 14),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), bc),
+            ('GRID', (0, 1), (-1, -1), 2, colors.black),
+        ])
 
+        task_table.setStyle(styleConfig_tasks)
 
-        return[]
+        # Create section title
+        section_title_table = Table([[section_title]])
 
-    def create_pdf(self): 
-        
-        current_tasks = [task for task in self.tasks if task.status != "Completed" or task.status != 'completed']
-        completed_tasks = [task for task in self.tasks if task.status == "Completed" or task.status == 'completed']
+        section_style_config = TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), self.row_fontName),
+            ('FONTSIZE', (0, 0), (-1, 0), 14),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ])
+        section_title_table.setStyle(section_style_config)
+
+        # Return the section title and table as flowables
+        return section_title_table, task_table
+
+    def create_pdf(self,filename='task_report.pdf'): 
+
+        current_tasks = []
+        completed_tasks = []
+
+        for task in self.tasks:
+            if task.status.upper() != "COMPLETED":
+                # Adding current task or tasks that are not completed
+                current_tasks.append(task) 
+            else:
+                # Adding task that are Completed
+                completed_tasks.append(task)
 
         #creating the table for the document
-        pdf_doc = SimpleDocTemplate(self.filename,pagesizes=landscape(letter))
-    
-        
-        
-        pdf_doc.build([current_tasks]])
+        pdf_doc = SimpleDocTemplate(filename,pagesizes=landscape(letter))
+    	
+        elements = []
+
+        elements.append(self.create_title_table("Task Manager Report"))
+        if current_tasks:
+            current_section, current_table =self.create_task_table("Current Tasks",current_tasks)
+            elements.append(current_section)
+            elements.append(current_table)
+
+        if completed_tasks:
+            completed_section, completed_table = self.create_task_table("Completed Tasks",completed_tasks)
+            elements.append(completed_section)
+            elements.append(completed_table)
+
+        pdf_doc.build(elements)
 
 
 
