@@ -1,6 +1,10 @@
-def main():
+from pdf_generator import PDF_Generator
+from task import Task
 
-    create_pdf('test.pdf')
+pdf = PDF_Generator
+
+def main():
+  pass
 
 if __name__ == "__main__":
     main()
