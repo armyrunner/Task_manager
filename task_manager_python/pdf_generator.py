@@ -60,9 +60,9 @@ class PDF_Generator():
         rowNumb = len(task_table_data)
         for i in range(1, rowNumb):
             if i % 2 == 0:
-                bc = colors.burlywood
+                bc = colors.lightgrey
             else:
-                bc = colors.beige
+                bc = colors.whitesmoke
 
         styleConfig_tasks = TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
