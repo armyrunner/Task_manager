@@ -56,14 +56,6 @@ class PDF_Generator():
         # Create the table object
         task_table = Table(task_table_data)
 
-        # Add alternating row colors for styling
-        rowNumb = len(task_table_data)
-        for i in range(1, rowNumb):
-            if i % 2 == 0:
-                bc = colors.lightgrey
-            else:
-                bc = colors.whitesmoke
-
         styleConfig_tasks = TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -71,7 +63,7 @@ class PDF_Generator():
             ('FONTNAME', (0, 0), (-1, 0), self.row_fontName),
             ('FONTSIZE', (0, 0), (-1, 0), 14),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), bc),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.bisque),
             ('GRID', (0, 1), (-1, -1), 2, colors.black),
         ])
 
