@@ -47,6 +47,7 @@ class TestTaskManager(unittest.TestCase):
         self.manager.add_task("Test Task 3", "2025-03-10","Started")
 
         task_2 = self.manager.delete_task(2)
+        self.manager.display_tasks()
         self.assertEqual(len(self.manager.tasks),2)
 
 

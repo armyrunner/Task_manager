@@ -1,9 +1,11 @@
-import pickle
-import os
 
 from prettytable import PrettyTable
 from task import Task
 from pdf_generator import PDF_Generator
+
+import pickle
+import os
+import sqlite3
 
 class Task_Manager:
 
@@ -27,7 +29,7 @@ class Task_Manager:
     # save task function
     def save_tasks(self):
         with open(self.filename,'wb') as f:
-            pickle.dump(self.tasks,f)
+            pickle.dump(self,f)
     
     # add task function
     def add_task(self,task_description="",due_date = "",start_date="",finish_date="",status ='Not Started'):
@@ -57,7 +59,6 @@ class Task_Manager:
     # delete task function
     def delete_task(self,task_id):
         self.tasks = [task for task in self.tasks if task.task_id != task_id]
-        self.save_tasks()
 
     def display_tasks(self):
         table = PrettyTable()
