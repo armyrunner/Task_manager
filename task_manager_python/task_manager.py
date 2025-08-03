@@ -2,63 +2,66 @@
 from prettytable import PrettyTable
 from task import Task
 from pdf_generator import PDF_Generator
+from task_db import Task_DB
 
-import pickle
 import os
-import sqlite3
 
 class Task_Manager:
 
     # init funcion
-    def __init__(self,filename ='task.pkl'):
-        self.filename = filename
+    def __init__(self): 
         self.tasks = self.load_tasks()
         self.task_report = "task_report.pdf"
+        self.tdb = Task_DB()
     
         # load task function
     def load_tasks(self):
-        if not os.path.exists(self.filename):
-            with open(self.filename,'wb') as f:
-                pickle.dump([],f)
-        try:
-            with open(self.filename,'rb') as f:
-                return pickle.load(f)
-        except (EOFError):
-            return []
+        all_tasks = self.tdb.get_all_tasks()
+        tasks = []
+        for row in all_tasks:
+            task_id,descritption,due_date,start_date,finsih_date,status = row
+            tasks.append(Task(task_id,descritption,due_date,start_date,finsih_date,status))
+        return tasks
     
     # save task function
     def save_tasks(self):
-        with open(self.filename,'wb') as f:
-            pickle.dump(self,f)
+        # Might apply later for larger program. reserved for bulk saving, more fore GUI
+        pass
     
     # add task function
     def add_task(self,task_description="",due_date = "",start_date="",finish_date="",status ='Not Started'):
-        task_id = len(self.tasks) + 1
+        task_id = self.tdb.add_task(task_description,due_date,start_date,finish_date,status)
         tasks = Task(task_id,task_description,due_date,start_date,finish_date,status)
         self.tasks.append(tasks)        
-        self.save_tasks()
+
 
     # update task function
     def update_task(self,task_id,task_description = "",due_date = "",start_date="",finish_date="",status ='Not Started'):
         for task in self.tasks:
-            if task_id == task.task_id:
-                if task_description:
-                    task.task_description = task_description
-                if due_date:
-                    task.due_date = due_date
-                if start_date:
-                    task.start_date = start_date
-                if finish_date:
-                    task.finish_date = finish_date
-                if status:
-                    task.status = status
-                self.save_tasks()
+            if task.task_id == task_id:
+                task_description = task_description or task.task_description
+                due_date = due_date or task.due_date
+                start_date = start_date or task.start_date
+                finish_date = finish_date or task.finish_date
+                status = status or task.status
+        
+            success = self.tdb.update_tasks(task_id,task_description,due_date,start_date,finish_date,status)
+
+            if success:
+                task.task_description = task_description
+                task.due_date = due_date
+                task.start_date = start_date
+                task.finish_date = finish_date
+                task.status = status
                 return True
+            return False
         return False
 
     # delete task function
     def delete_task(self,task_id):
-        self.tasks = [task for task in self.tasks if task.task_id != task_id]
+        removed = self.tdb.delete_task(task_id)
+        if removed:
+            self.tasks = [task for task in self.tasks if task.task_id != task_id]
 
     def display_tasks(self):
         table = PrettyTable()
