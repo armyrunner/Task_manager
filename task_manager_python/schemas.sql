@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS initial_tasks(
     description TEXT,
     due_date TEXT,
     start_date TEXT,
-    finsih_date TEXT,
+    finish_date TEXT,
     status TEXT
     );
 
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS completed_tasks(
     description TEXT,
     due_date TEXT,
     start_date TEXT,
-    finsih_date TEXT,
+    finish_date TEXT,
     status TEXT,
     FOREIGN KEY(task_id) REFERENCES Tasks(id)
     );
