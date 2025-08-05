@@ -17,10 +17,14 @@ class Task_Manager:
         all_tasks = self.tdb.get_all_tasks()
         tasks = []
         for row in all_tasks:
-            task_id=['id'],
-            task_descritption=row['task_description'],
-            due_date=row,start_date,finsih_date,status
-           
+            tasks.append(Task(
+                task_id=row['id'],
+                task_description=row['task_description'],
+                due_date=row['due_date'],
+                start_date=row['start_date'],
+                finish_date=row['finish_date'],
+                status=row['status']
+            ))
         return tasks
     
     # save task function
@@ -36,8 +40,8 @@ class Task_Manager:
 
 
     # update task function
-    def update_task(self,task_id,task_description = "",due_date = "",start_date="",finish_date="",status ='Not Started'):
-        exists = self.tdb.get_all_tasks()
+    def update_task(self,task_id,task_description =None,due_date = None,start_date=None,finish_date=None,status ='Not Started'):
+        exists = self.tdb.get_one_task(task_id)
 
         if not exists:
             return None
@@ -53,12 +57,20 @@ class Task_Manager:
         if task_info['status'].lower() in ['complete', 'completed']:
             self.tdb.completed_tasks(task_info)
             self.tdb.delete_task(task_id)
-            self.tasks = self.load_tasks()
-            return print('Task succuesslly moved to completed table!')
+        else:
+            self.tdb.update_tasks(
+                task_info['task_description'],
+                task_info['due_date'],
+                task_info['start_date'],
+                task_info['finish_date'],
+                task_info['status'],
+                task_id
+            )
+            
+            msg = "Update Successful"
         
-        self.tdb.update_tasks(task_id, task_info)
         self.tasks = self.load_tasks()
-        return print('Task was updated and saved')
+        return msg
 
     # delete task function
     def delete_task(self,task_id):
@@ -79,5 +91,7 @@ class Task_Manager:
     def generate_pdf(self):
         pdf = PDF_Generator(self.tasks)
         pdf.create_pdf(self.task_report)
+
+
 
 

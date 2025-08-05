@@ -19,9 +19,13 @@ class Task_DB():
         self.cursor = self.conn.cursor()
         self.cursor.executescript(sql_script)
 
-    def add_task(self,description,due_date,start_date=None,finish_date=None,status='Not Started'):
-        data = [description,due_date,start_date,finish_date,status]
-        self.cursor.execute("INSERT INTO initial_tasks(description,due_date,start_date,finish_date,status) Values(?,?,?,?,?)",data)
+    def close_db(self):
+        if self.conn:
+            self.conn.close()
+
+    def add_task(self,task_description,due_date,start_date=None,finish_date=None,status='Not Started'):
+        data = [task_description,due_date,start_date,finish_date,status]
+        self.cursor.execute("INSERT INTO initial_tasks(task_description,due_date,start_date,finish_date,status) Values(?,?,?,?,?)",data)
         self.conn.commit() 
         return self.cursor.lastrowid       
 
@@ -29,12 +33,25 @@ class Task_DB():
         self.cursor.execute("SELECT * FROM initial_tasks")
         return self.cursor.fetchall()
     
-    def update_tasks(self,description,due_date,start_date,finish_date,status,task_id):
-        data = [description,due_date,start_date,finish_date,status,task_id]
-        self.cursor.execute("UPDATE initial_tasks SET description = ?,due_date = ?,start_date = ?,finish_date = ?,status = ? WHERE id = ?",data)
+    def get_one_task(self,task_id):
+        self.cursor.execute("SELECT * FROM initial_tasks WHERE id = ?", (task_id,))
+        return self.cursor.fetchone()
+        
+    def get_task_id(self,task_description):
+        self.cursor.execute("SELECT id FROM initial_tasks WHERE task_description = ?",(task_description,))
+        return self.cursor.fetchone()
+    
+    def update_tasks(self,task_description,due_date,start_date,finish_date,status,task_id):
+        data = [task_description,due_date,start_date,finish_date,status,task_id]
+        self.cursor.execute("UPDATE initial_tasks SET task_description = ?,due_date = ?,start_date = ?,finish_date = ?,status = ? WHERE id = ?",data)
         self.conn.commit()
 
-    def delete_task(self,task_id):
-        self.cursor.execute("DELETE FROM initial_tasks WHERE id = ?",task_id)
-        self.conn.commit()
-        
+    def delete_task(self, task_id):
+        try:
+            self.cursor.execute("DELETE FROM initial_tasks WHERE id = ?", (task_id,))
+            self.conn.commit()
+            return True  # success
+        except sqlite3.Error as e:
+            print(f"SQLite error during delete: {e}")
+            return False
+

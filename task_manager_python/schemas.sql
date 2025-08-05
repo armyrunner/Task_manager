@@ -1,7 +1,7 @@
 -- Task Table
 CREATE TABLE IF NOT EXISTS initial_tasks(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    description TEXT,
+    task_description TEXT,
     due_date TEXT,
     start_date TEXT,
     finish_date TEXT,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS initial_tasks(
 CREATE TABLE IF NOT EXISTS completed_tasks(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id INTEGER NOT NULL,
-    description TEXT,
+    task_description TEXT,
     due_date TEXT,
     start_date TEXT,
     finish_date TEXT,
