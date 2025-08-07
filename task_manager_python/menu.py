@@ -1,11 +1,13 @@
 from task_manager import Task_Manager
+from task_db import Task_DB
 from simple_term_menu import TerminalMenu
 import sys
 
 class Main_Menu():
 
     def __init__(self):
-        self.TM = Task_Manager("task.pkl")
+        self.TM = Task_Manager("tasks.db")
+        self.TDB = Task_DB("task.db")
         pass
 
     def menu_items(self):
@@ -22,6 +24,7 @@ class Main_Menu():
         term_menu = TerminalMenu(options)
         menu_index = term_menu.show()
         menu_selection = options[menu_index]
+    
         return menu_selection
     
     def dict_menu_setup(self,options):
@@ -56,5 +59,6 @@ class Main_Menu():
         pass
 
     def exitProgram(self):
+        self.TDB.close_db()
         sys.exit(0)
         

@@ -23,7 +23,8 @@ class Task_Manager:
                 due_date=row['due_date'],
                 start_date=row['start_date'],
                 finish_date=row['finish_date'],
-                status=row['status']
+                status=row['status'],
+                notes=row['notes']
             ))
         return tasks
     
@@ -33,14 +34,14 @@ class Task_Manager:
         pass
     
     # add task function
-    def add_task(self,task_description="",due_date = "",start_date=None,finish_date=None,status ='Not Started'):
-        task_id = self.tdb.add_task(task_description,due_date,start_date,finish_date,status)
+    def add_task(self,task_description="",due_date = "",start_date=None,finish_date=None,status ='Not Started',notes=None):
+        task_id = self.tdb.add_task(task_description,due_date,start_date,finish_date,status,notes)
         self.tasks = self.load_tasks()
         return task_id     
 
 
     # update task function
-    def update_task(self,task_id,task_description =None,due_date = None,start_date=None,finish_date=None,status ='Not Started'):
+    def update_task(self,task_id,task_description =None,due_date = None,start_date=None,finish_date=None,status ='Not Started',notes=None):
         exists = self.tdb.get_one_task(task_id)
 
         if not exists:
@@ -51,7 +52,8 @@ class Task_Manager:
             'due_date': due_date if due_date is not None else exists['due_date'],
             'start_date': start_date if start_date is not None else exists['start_date'],
             'finish_date': finish_date if finish_date is not None else exists['finish_date'],
-            'status': status if status is not None else exists['status']
+            'status': status if status is not None else exists['status'],
+            'notes':notes if notes is not None else exists['notes']
         }
         
         if task_info['status'].lower() in ['complete', 'completed']:
@@ -64,6 +66,7 @@ class Task_Manager:
                 task_info['start_date'],
                 task_info['finish_date'],
                 task_info['status'],
+                task_info['notes'],
                 task_id
             )
             
@@ -80,10 +83,10 @@ class Task_Manager:
 
     def display_tasks(self):
         table = PrettyTable()
-        table.field_names = ["Task Id","Description","Due Date","Start Date","Finish Date","Status"]
+        table.field_names = ["Task Id","Description","Due Date","Start Date","Finish Date","Status","Notes"]
 
         for task in self.tasks:
-            table.add_row([task.task_id,task.task_description,task.due_date,task.start_date,task.finish_date,task.status])
+            table.add_row([task.task_id,task.task_description,task.due_date,task.start_date,task.finish_date,task.status,task.notes])
 
         print(table)          
 
@@ -91,6 +94,7 @@ class Task_Manager:
     def generate_pdf(self):
         pdf = PDF_Generator(self.tasks)
         pdf.create_pdf(self.task_report)
+        self.tdb.close_db()
 
 
 

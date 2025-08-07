@@ -2,6 +2,9 @@ import unittest
 import os
 import sqlite3
 import task_db
+import tracemalloc
+tracemalloc.start()
+import traceback
 from task_manager import Task_Manager
 
 
@@ -39,6 +42,7 @@ class TestTaskManager(unittest.TestCase):
         self.cursor.execute("DELETE FROM completed_tasks")
         self.conn.commit()
         self.conn.close()
+        self.manager.tdb.close_db()
       
     def test_01_add_task(self):
         """Test adding a task."""
@@ -53,9 +57,6 @@ class TestTaskManager(unittest.TestCase):
         self.manager.add_task("Test Task 4", due_date="2025-03-10",status="Started")
 
         self.manager.display_tasks()
-        
-        # task_2 = self.manager.update_task(2,"Do Math Homework","2025-03-10","2025-03-07","2025-03-07","Need to do problems 5-10")
-        # task_3 = self.manager.update_task(3,"Oil Change on Car","2025-03-10",None,None,"Need To Start")
 
         task_2 = self.manager.update_task(2,task_description="Do Math Homework",start_date="2025-03-10",finish_date=None,status="Need to do problems 5-10")
         task_3 = self.manager.update_task(3,task_description="Oil Change on Car",start_date="2025-03-10",finish_date=None,status="Need To Start")
@@ -91,15 +92,14 @@ class TestTaskManager(unittest.TestCase):
     def test_05_create_pdf_task_report(self):
         self.manager.add_task("Complete Project Report","2025-03-20","2025-03-10","2025-03-15","Will be starting the project soon")
         self.manager.add_task("Fix Bugs","2025-03-22","2025-03-12","2025-03-18","In Progress")
-        self.manager.add_task("Submit Final Version","2025-03-25","2025-03-15","2025-03-20","Completed")
+        self.manager.add_task("Submit Final Version","2025-03-25","2025-03-15","2025-03-20","Completed","Accomplished by many revision of the program")
         self.manager.add_task("Complete Project Report","2025-03-20","2025-03-10","2025-03-15","Will be starting the project soon")
         self.manager.add_task("Fix Bugs","2025-03-22","2025-03-12","2025-03-18","In Progress")
-        self.manager.add_task("Submit Final Version","2025-03-25","2025-03-15","2025-03-20","Completed")
+        self.manager.add_task("Oil Change","2025-03-25","2025-03-15","2025-03-20","Completed","Had to call BT Pearson to get that done")
         self.manager.add_task("Complete Project Report","2025-03-20","2025-03-10","2025-03-15","Will be starting the project soon")
         self.manager.add_task("Fix Bugs","2025-03-22","2025-03-12","2025-03-18","In Progress")
-        self.manager.add_task("Submit Final Version","2025-03-25","2025-03-15","2025-03-20","Completed")
+        self.manager.add_task("Back to school nigh","2025-03-25","2025-03-15","2025-03-20","Completed","Took my daughter to visit with teachers")
         self.manager.display_tasks()
-    
         self.manager.generate_pdf()
 
         assert os.path.exists(self.manager.task_report)

@@ -47,9 +47,9 @@ class PDF_Generator():
         return section_title_table
     
     def create_task_table(self, section_title, tasks):
-        task_table_data = [["ID", "Task Description", "Due Date", "Start Date", "Finish Date", "Status"]]
+        task_table_data = [["ID", "Task Description", "Due Date", "Start Date", "Finish Date", "Status","Notes"]]
         # Add task data
-        task_table_data.extend([[task.task_id, task.task_description, task.due_date, task.start_date, task.finish_date, task.status] for task in tasks])
+        task_table_data.extend([[task.task_id, task.task_description, task.due_date, task.start_date, task.finish_date, task.status,task.notes] for task in tasks])
         
         # Create the table object
         task_table = Table(task_table_data)
@@ -95,7 +95,7 @@ class PDF_Generator():
                 completed_tasks.append(task)
 
         #creating the table for the document
-        pdf_doc = SimpleDocTemplate(filename,pagesizes=landscape(letter))
+        pdf_doc = SimpleDocTemplate(filename,pagesize=landscape(letter))
     	
         elements = []
 

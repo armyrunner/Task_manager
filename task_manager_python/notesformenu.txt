@@ -1,0 +1,73 @@
+from simple_term_menu import TerminalMenu
+
+# Define Task object
+class Task:
+    def __init__(self, task_id, description, due_date, start_date, finish_date, status):
+        self.task_id = task_id
+        self.task_description = description
+        self.due_date = due_date
+        self.start_date = start_date
+        self.finish_date = finish_date
+        self.status = status
+
+    def __str__(self):
+        return f"[{self.task_id}] {self.task_description} (Status: {self.status})"
+
+tasks = []
+
+# Define task-related functions
+def add_task():
+    while True:
+        print("\n--- Add Task ---")
+        task_id = input("Task ID: ")
+        description = input("Description: ")
+        due_date = input("Due Date: ")
+        start_date = input("Start Date: ")
+        finish_date = input("Finish Date: ")
+        status = input("Status: ")
+
+        tasks.append(Task(task_id, description, due_date, start_date, finish_date, status))
+        print("✅ Task added.")
+
+        # Sub-menu after task entry
+        next_step_menu = TerminalMenu(["Add Another Task", "Return to Main Menu"], title="\nWhat would you like to do?")
+        next_choice = next_step_menu.show()
+        if next_choice == 1:  # Return to Main Menu
+            break
+
+def view_tasks():
+    print("\n--- Task List ---")
+    if not tasks:
+        print("No tasks available.")
+    else:
+        for task in tasks:
+            print(task)
+    input("\nPress Enter to return to the main menu...")
+
+def exit_program():
+    print("👋 Exiting...")
+    exit(0)
+
+# Map menu labels to functions
+menu_actions = {
+    "Add Task": add_task,
+    "View Tasks": view_tasks,
+    "Exit": exit_program
+}
+
+def main_menu():
+    options = list(menu_actions.keys())
+    menu = TerminalMenu(options, title="== Task Manager ==")
+
+    while True:
+        choice_index = menu.show()
+        selected_label = options[choice_index]
+        action = menu_actions.get(selected_label)
+        if action:
+            action()
+        else:
+            print("Invalid selection.")
+
+# Run the app
+if __name__ == "__main__":
+    main_menu()

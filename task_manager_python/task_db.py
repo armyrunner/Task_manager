@@ -23,9 +23,9 @@ class Task_DB():
         if self.conn:
             self.conn.close()
 
-    def add_task(self,task_description,due_date,start_date=None,finish_date=None,status='Not Started'):
-        data = [task_description,due_date,start_date,finish_date,status]
-        self.cursor.execute("INSERT INTO initial_tasks(task_description,due_date,start_date,finish_date,status) Values(?,?,?,?,?)",data)
+    def add_task(self,task_description,due_date,start_date=None,finish_date=None,status='Not Started',notes=None):
+        data = [task_description,due_date,start_date,finish_date,status,notes]
+        self.cursor.execute("INSERT INTO initial_tasks(task_description,due_date,start_date,finish_date,status,notes) Values(?,?,?,?,?,?)",data)
         self.conn.commit() 
         return self.cursor.lastrowid       
 
@@ -41,9 +41,9 @@ class Task_DB():
         self.cursor.execute("SELECT id FROM initial_tasks WHERE task_description = ?",(task_description,))
         return self.cursor.fetchone()
     
-    def update_tasks(self,task_description,due_date,start_date,finish_date,status,task_id):
-        data = [task_description,due_date,start_date,finish_date,status,task_id]
-        self.cursor.execute("UPDATE initial_tasks SET task_description = ?,due_date = ?,start_date = ?,finish_date = ?,status = ? WHERE id = ?",data)
+    def update_tasks(self,task_description,due_date,start_date,finish_date,status,notes,task_id):
+        data = [task_description,due_date,start_date,finish_date,status,notes,task_id]
+        self.cursor.execute("UPDATE initial_tasks SET task_description = ?,due_date = ?,start_date = ?,finish_date = ?,status = ?,notes = ? WHERE id = ?",data)
         self.conn.commit()
 
     def delete_task(self, task_id):
