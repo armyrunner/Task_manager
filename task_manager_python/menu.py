@@ -93,9 +93,12 @@ class Main_Menu():
 
     def deleteTask(self):
         os.system("clear")
-        self.TM.load_tasks()
-        self.displayTasks()
-        task_id = int(self.get_user_string("What Task do you want to delete? "))
+        self.TM.display_tasks()
+        task_id = self.get_user_string("What Task do you want to delete? ")
+        if task_id == '':
+            self.viewTask_next_choice()
+        elif task_id.isdigit():
+            task_id == int(task_id)
         self.TM.delete_task(task_id)
         self.displayTasks()
 
@@ -106,11 +109,11 @@ class Main_Menu():
 
     def printPDF(self):
         self.TM.generate_pdf()
-        os.system()
+        os.system("clear")
         self.menu_items()
 
     def exitProgram(self):
-        os.system()
+        os.system("clear")
         self.TDB.close_db()
         sys.exit(0)
         
