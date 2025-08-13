@@ -7,7 +7,7 @@ from task_db import *
 class Task_Manager:
 
     # init funcion
-    def __init__(self,db_filename='tasks.db'): 
+    def __init__(self,db_filename): 
         self.tdb = Task_DB(db_filename)
         self.task_report = "task_report.pdf"
         self.tasks = self.load_tasks()
@@ -48,12 +48,12 @@ class Task_Manager:
             return None
         
         task_info = {
-            'task_description': task_description if task_description is not None else exists['task_description'],
-            'due_date': due_date if due_date is not None else exists['due_date'],
-            'start_date': start_date if start_date is not None else exists['start_date'],
-            'finish_date': finish_date if finish_date is not None else exists['finish_date'],
-            'status': status if status is not None else exists['status'],
-            'notes':notes if notes is not None else exists['notes']
+            'task_description': task_description if task_description not in [None,''] else exists['task_description'],
+            'due_date': due_date if due_date not in [None,'']  else exists['due_date'],
+            'start_date': start_date if start_date not in [None,'']  else exists['start_date'],
+            'finish_date': finish_date if finish_date not in [None,'']  else exists['finish_date'],
+            'status': status if status not in [None,'']  else exists['status'],
+            'notes':notes if notes not in [None,'']  else exists['notes']
         }
         
         if task_info['status'].lower() in ['complete', 'completed']:

@@ -4,8 +4,6 @@ from menu import Main_Menu
 import os
 import sys
 
-
-TM = Task_Manager()
 MM = Main_Menu()
 
 def main():

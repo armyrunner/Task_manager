@@ -1,5 +1,5 @@
 from reportlab.lib.pagesizes import letter,landscape
-from reportlab.platypus import SimpleDocTemplate,Table,TableStyle
+from reportlab.platypus import SimpleDocTemplate,Table,TableStyle,PageBreak
 from reportlab.lib import colors
 
 class PDF_Generator():
@@ -47,16 +47,16 @@ class PDF_Generator():
         return section_title_table
     
     def create_task_table(self, section_title, tasks):
-        task_table_data = [["ID", "Task Description", "Due Date", "Start Date", "Finish Date", "Status","Notes"]]
+        task_table_data = [["Task Description", "Due Date", "Start Date", "Finish Date", "Status","Notes"]]
         # Add task data
-        task_table_data.extend([[task.task_id, task.task_description, task.due_date, task.start_date, task.finish_date, task.status,task.notes] for task in tasks])
+        task_table_data.extend([[task.task_description, task.due_date, task.start_date, task.finish_date, task.status,task.notes] for task in tasks])
         
         # Create the table object
         task_table = Table(task_table_data)
 
         styleConfig_tasks = TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), self.row_fontName),
             ('FONTSIZE', (0, 0), (-1, 0), 14),
@@ -106,6 +106,7 @@ class PDF_Generator():
             elements.append(current_table)
 
         if completed_tasks:
+            elements.append(PageBreak())
             completed_section, completed_table = self.create_task_table("Completed Tasks",completed_tasks)
             elements.append(completed_section)
             elements.append(completed_table)
