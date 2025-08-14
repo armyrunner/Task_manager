@@ -70,6 +70,7 @@ class Main_Menu():
             due_date = self.get_user_string("When does the Task need to be completed? ")
             self.TM.add_task(description,due_date)
             
+            self.TM.load_tasks()
             self.newTask_next_choice()
         
         
@@ -88,6 +89,7 @@ class Main_Menu():
             notes = self.get_user_string("Any Notes for this Task(Keep it Brief)? ")
             self.TM.update_task(task_id,description,due_date,start_date,finish_date,status,notes)
             
+            self.TM.load_tasks()
             self.newTask_next_choice()
 
 
@@ -100,14 +102,17 @@ class Main_Menu():
         elif task_id.isdigit():
             task_id == int(task_id)
         self.TM.delete_task(task_id)
+        self.TM.load_tasks()
         self.displayTasks()
 
     def displayTasks(self):
         os.system("clear")
+        self.TM.load_tasks()
         self.TM.display_tasks()
         self.viewTask_next_choice()
 
     def printPDF(self):
+        self.TM.load_tasks()
         self.TM.generate_pdf()
         os.system("clear")
         self.menu_items()
