@@ -45,7 +45,7 @@ class Task_Manager:
         exists = self.tdb.get_one_task(task_id)
 
         if not exists:
-            return None
+            return f"Error: Task ID {task_id} does not exist. Please try again."
         
         task_info = {
             'task_description': task_description if task_description not in [None,''] else exists['task_description'],
@@ -57,7 +57,7 @@ class Task_Manager:
         }
         
         if task_info['status'].lower() in ['complete', 'completed']:
-            self.tdb.completed_tasks(task_info)
+            self.tdb.completed_tasks(task_info, task_id)
             self.tdb.delete_task(task_id)
         else:
             self.tdb.update_tasks(
@@ -70,10 +70,8 @@ class Task_Manager:
                 task_id
             )
             
-            msg = "Update Successful"
-        
         self.tasks = self.load_tasks()
-        return msg
+        return "Update Successful"
 
     # delete task function
     def delete_task(self,task_id):
@@ -92,9 +90,31 @@ class Task_Manager:
 
 
     def generate_pdf(self):
-        pdf = PDF_Generator(self.tasks)
-        pdf.create_pdf(self.task_report)
-        self.tdb.close_db()
+        # Get current tasks
+        current_tasks = self.tasks
+        
+        # Get completed tasks from database
+        completed_tasks_data = self.tdb.get_completed_tasks()
+        completed_tasks = []
+        for row in completed_tasks_data:
+            completed_tasks.append(Task(
+                task_id=row['id'],
+                task_description=row['task_description'],
+                due_date=row['due_date'],
+                start_date=row['start_date'],
+                finish_date=row['finish_date'],
+                status=row['status'],
+                notes=row['notes']
+            ))
+        
+        # Generate one combined PDF with separate initial and completed task sections
+        if current_tasks or completed_tasks:
+            combined_pdf = PDF_Generator([])  # Empty list since we'll pass tasks separately
+            combined_pdf.create_separate_sections_pdf(self.task_report, current_tasks, completed_tasks)
+            print(f"Task report generated: {self.task_report}")
+        else:
+            print("No tasks to generate report for.")
+
 
 
 

@@ -101,13 +101,37 @@ class PDF_Generator():
 
         elements.append(self.create_title_table("Task Manager Report"))
         if current_tasks:
-            current_section, current_table =self.create_task_table("Current Tasks",current_tasks)
+            current_section, current_table =self.create_task_table("Initial Tasks",current_tasks)
             elements.append(current_section)
             elements.append(current_table)
 
         if completed_tasks:
             elements.append(PageBreak())
             completed_section, completed_table = self.create_task_table("Completed Tasks",completed_tasks)
+            elements.append(completed_section)
+            elements.append(completed_table)
+
+        pdf_doc.build(elements)
+
+    def create_separate_sections_pdf(self, filename='task_report.pdf', initial_tasks=None, completed_tasks=None):
+        """Create PDF with separate initial and completed task sections"""
+        
+        #creating the table for the document
+        pdf_doc = SimpleDocTemplate(filename,pagesize=landscape(letter))
+    	
+        elements = []
+
+        elements.append(self.create_title_table("Task Manager Report"))
+        
+        if initial_tasks:
+            initial_section, initial_table = self.create_task_table("Initial Tasks", initial_tasks)
+            elements.append(initial_section)
+            elements.append(initial_table)
+
+        if completed_tasks:
+            if initial_tasks:  # Add page break only if there are initial tasks
+                elements.append(PageBreak())
+            completed_section, completed_table = self.create_task_table("Completed Tasks", completed_tasks)
             elements.append(completed_section)
             elements.append(completed_table)
 

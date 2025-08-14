@@ -12,38 +12,42 @@ class Main_Menu():
         pass
 
     def menu_items(self):
-        options = {
-            "New Task": self.createTask,
-            "Update Tasks": self.updateTasks,
-            "Delete Tasks": self.deleteTask,
-            "View Tasks": self.displayTasks,
-            "Exit": self.exitProgram
-        }
-        self.dict_menu_setup(options)
+        while True:
+            options = {
+                "New Task": self.createTask,
+                "Update Tasks": self.updateTasks,
+                "Delete Tasks": self.deleteTask,
+                "View Tasks": self.displayTasks,
+                "Exit": self.exitProgram
+            }
+            self.dict_menu_setup(options)
 
     def newTask_next_choice(self):
-        options ={
-            "Add Tasks":self.createTask,
-            "View Tasks":self.displayTasks,
-            "Main Menu":self.menu_items
-        }
-        self.dict_menu_setup(options)
+        while True:
+            options ={
+                "Add Tasks":self.createTask,
+                "View Tasks":self.displayTasks,
+                "Main Menu":self.menu_items
+            }
+            self.dict_menu_setup(options)
 
     def viewTask_next_choice(self):
-        options ={
-            "Delete Tasks": self.deleteTask,
-            "Print Tasks":self.printPDF,
-            "Main Menu":self.menu_items
-        }
-        self.dict_menu_setup(options)
+        while True:
+            options ={
+                "Delete Tasks": self.deleteTask,
+                "Print Tasks":self.printPDF,
+                "Main Menu":self.menu_items
+            }
+            self.dict_menu_setup(options)
 
     def updateTask_next_choice(self):
-        options ={
-            "Update Tasks": self.updateTasks,
-            "Print Tasks":self.printPDF,
-            "Main Menu":self.menu_items
-        }
-        self.dict_menu_setup(options)
+        while True:
+            options ={
+                "Update Tasks": self.updateTasks,
+                "Print Tasks":self.printPDF,
+                "Main Menu":self.menu_items
+            }
+            self.dict_menu_setup(options)
 
     def menu_setup(self,options):
         term_menu = TerminalMenu(options)
@@ -80,6 +84,14 @@ class Main_Menu():
             os.system("clear")
             self.TM.display_tasks()
             task_id = int(self.get_user_string("Which Task needs to be updated? "))
+            
+            # Check if task ID exists immediately
+            exists = self.TM.tdb.get_one_task(task_id)
+            if not exists:
+                print(f"\nError: Task ID {task_id} does not exist. Please try again.")
+                input("Press Enter to continue...")
+                continue
+            
             print("Create your task by answering some basic questions. if you don't know the answer you can leave it blank.")
             description = self.get_user_string("What is the Task assigned? ")
             due_date = self.get_user_string("When does the Task need to be completed? ")
@@ -87,7 +99,7 @@ class Main_Menu():
             finish_date = self.get_user_string("When did you finish? ")
             status = self.get_user_string("What is the status of the Task?(Started,In-Progress,Complete/Completed)")
             notes = self.get_user_string("Any Notes for this Task(Keep it Brief)? ")
-            self.TM.update_task(task_id,description,due_date,start_date,finish_date,status,notes)
+            result = self.TM.update_task(task_id,description,due_date,start_date,finish_date,status,notes)
             
             self.TM.load_tasks()
             self.newTask_next_choice()
@@ -119,6 +131,5 @@ class Main_Menu():
 
     def exitProgram(self):
         os.system("clear")
-        self.TDB.close_db()
         sys.exit(0)
         

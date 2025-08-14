@@ -55,3 +55,12 @@ class Task_DB():
             print(f"SQLite error during delete: {e}")
             return False
 
+    def get_completed_tasks(self):
+        self.cursor.execute("SELECT * FROM completed_tasks")
+        return self.cursor.fetchall()
+
+    def completed_tasks(self,task_info,task_id):
+        data = [task_id,task_info['task_description'],task_info['due_date'],task_info['start_date'],task_info['finish_date'],task_info['status'],task_info['notes']]
+        self.cursor.execute("INSERT INTO completed_tasks(task_id,task_description,due_date,start_date,finish_date,status,notes) Values(?,?,?,?,?,?,?)",data)
+        self.conn.commit()
+        return self.cursor.lastrowid
