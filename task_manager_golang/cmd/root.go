@@ -30,4 +30,7 @@ func Execute() {
 func init() {
 	rootCMD.AddCommand(addTaskCmd)
 	rootCMD.AddCommand(listTasksCmd)
+	rootCMD.AddCommand(updateTaskCmd)
+	rootCMD.AddCommand(listCompletedTasksCmd)
+	rootCMD.AddCommand(generateReportCmd)
 }

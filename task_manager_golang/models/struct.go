@@ -1,15 +1,13 @@
 package models
 
-import "time"
-
 
 type Task struct{
 
 	ID          int
 	Description string
-	DueDate     time.Time
-	StartDate   *time.Time
-	FinishDate  *time.Time
+	DueDate     string
+	StartDate   string
+	FinishDate  string
 	Status      string
 	Notes       string
 }

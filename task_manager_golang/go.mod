@@ -3,6 +3,7 @@ module github.com/armyrunner/task_manager
 go 1.24.1
 
 require (
+	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/spf13/cobra v1.9.1
 )
