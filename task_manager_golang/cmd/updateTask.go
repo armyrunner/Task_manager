@@ -35,7 +35,7 @@ var updateTaskCmd = &cobra.Command{
 		finalNotes := mergeString(information, existingNotes)
 
 		// Check if the task is being marked as complete
-		if finalStatus == "complete" {
+		if finalStatus == "complete" || finalStatus == "Complete" || finalStatus == "completed" || finalStatus == "Completed" {
 			// Move the task to completed_tasks table
 			err = db.MoveCompletedTask(taskID)
 			if err != nil {

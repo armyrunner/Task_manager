@@ -9,7 +9,7 @@ import (
 )
 
 var generateReportCmd = &cobra.Command{
-	Use:   "generate-report",
+	Use:   "report",
 	Short: "Generate a report of all tasks",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
