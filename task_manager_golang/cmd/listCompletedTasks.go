@@ -24,11 +24,12 @@ var listCompletedTasksCmd = &cobra.Command{
 		}
 
 		fmt.Println("Completed Tasks:")
-		fmt.Println("ID   Description        Due Date    Start       Finish  Status       Notes")
-		fmt.Println("---  -----------        --------    -----       ------  ------       -----")
+		fmt.Println("ID   OrigID Description        Due Date    Start       Finish  Status       Notes")
+		fmt.Println("---  ------ -----------        --------    -----       ------  ------       -----")
 		for _, task := range tasks {
-			fmt.Printf("%-4d %-18s %-11s %-11s %-7s %-12s %s\n",
+			fmt.Printf("%-4d %-6d %-18s %-11s %-11s %-7s %-12s %s\n",
 				task.ID,
+				task.OriginalID,
 				truncateString(task.Description, 18),
 				task.DueDate,
 				task.StartDate,

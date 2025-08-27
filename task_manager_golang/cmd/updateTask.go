@@ -20,7 +20,7 @@ var updateTaskCmd = &cobra.Command{
 		}
 
 		// Fetch existing task data
-		existingDesc, existingDue, existingStart, existingFinish, existingStatus, existingNotes, err := db.SelectData(taskID)
+		_, existingDesc, existingDue, existingStart, existingFinish, existingStatus, existingNotes, err := db.SelectData(taskID)
 		if err != nil {
 			fmt.Println("Failed to fetch existing task:", err)
 			return
@@ -58,6 +58,13 @@ var updateTaskCmd = &cobra.Command{
 // mergeString returns newValue if it's not empty, otherwise returns existingValue
 func mergeString(newValue, existingValue string) string {
 	if newValue != "" {
+		return newValue
+	}
+	return existingValue
+}
+
+func mergeInt(newValue, existingValue int) int {
+	if newValue != 0 {
 		return newValue
 	}
 	return existingValue

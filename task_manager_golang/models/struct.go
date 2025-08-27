@@ -1,9 +1,8 @@
 package models
 
-
-type Task struct{
-
+type Task struct {
 	ID          int
+	OriginalID  int
 	Description string
 	DueDate     string
 	StartDate   string

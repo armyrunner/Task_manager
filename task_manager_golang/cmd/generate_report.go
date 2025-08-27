@@ -14,7 +14,7 @@ var generateReportCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Generating report...")
-		report_completed,err := db.Select_Completed_Tasks()
+		report_completed,err := db.SelectCompletedTasks()
 		if err != nil {
 			fmt.Println("Failed to generate initial tasks report:", err)
 			return

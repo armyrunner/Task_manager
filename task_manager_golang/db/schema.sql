@@ -18,6 +18,5 @@ CREATE TABLE IF NOT EXISTS completed_tasks(
     start_date TEXT,
     finish_date TEXT,
     status TEXT,
-    notes TEXT,
-    FOREIGN KEY(task_id) REFERENCES initial_tasks(id) ON DELETE SET NULL
+    notes TEXT
     );
