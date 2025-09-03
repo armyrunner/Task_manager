@@ -63,12 +63,6 @@ func mergeString(newValue, existingValue string) string {
 	return existingValue
 }
 
-func mergeInt(newValue, existingValue int) int {
-	if newValue != 0 {
-		return newValue
-	}
-	return existingValue
-}
 
 var task_id, description, duedate, startdate, finishdate, stat, information string
 
