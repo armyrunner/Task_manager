@@ -2,7 +2,7 @@ package db
 
 import (
 	"database/sql"
-	"time"
+	//"time"
 
 	"github.com/armyrunner/task_manager/models"
 )
@@ -119,14 +119,14 @@ func Select_Initial_Tasks() ([]models.Task, error) {
 // MoveCompletedTask moves a task from initial_tasks to completed_tasks when status is "complete"
 func MoveCompletedTask(id int) error {
 	// First, get the task data
-	originalID, description, due_date, start_date, _, _, notes, err := SelectData(id)
+	originalID, description, due_date, start_date, finish_date, _, notes, err := SelectData(id)
 	if err != nil {
 		return err
 	}
 
 	// Update the status and finish date to reflect completion
 	completedStatus := "Completed"
-	completedFinishDate := getCurrentDate()
+	//completedFinishDate := getCurrentDate()
 
 	// Insert into completed_tasks table
 	stmt, err := DB.Prepare("INSERT INTO completed_tasks (task_id, task_description, due_date, start_date, finish_date, status, notes) VALUES (?, ?, ?, ?, ?, ?, ?)")
@@ -135,7 +135,7 @@ func MoveCompletedTask(id int) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(originalID, description, due_date, start_date, completedFinishDate, completedStatus, notes)
+	_, err = stmt.Exec(originalID, description, due_date, start_date, finish_date, completedStatus, notes)
 	if err != nil {
 		return err
 	}
@@ -150,10 +150,10 @@ func MoveCompletedTask(id int) error {
 }
 
 // getCurrentDate returns the current date in YYYY-MM-DD format
-func getCurrentDate() string {
-	now := time.Now()
-	return now.Format("2006-01-02")
-}
+// func getCurrentDate() string {
+// 	now := time.Now()
+// 	return now.Format("2006-01-02")
+// }
 
 // SelectCompletedTasks retrieves all completed tasks
 func SelectCompletedTasks() ([]models.Task, error) {
