@@ -35,16 +35,15 @@ func OpenDatabase(db_path, schema_filename string) error {
 	}
 
 	absPath, _ := filepath.Abs(schemaFullPath)
-	fmt.Println("Reading schema from:", absPath)
 
-	if _, err := os.Stat(schemaFullPath); err != nil {
+	if _, err := os.Stat(absPath); err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("schema file does not exist: %s", schemaFullPath)
+			return fmt.Errorf("schema file does not exist: %s", absPath)
 		}
 		return fmt.Errorf("error checking schema file: %w", err)
 	}
 
-	schema, err := os.ReadFile(schemaFullPath)
+	schema, err := os.ReadFile(absPath)
 	if err != nil {
 		return fmt.Errorf("reading schema: %w", err)
 	}
