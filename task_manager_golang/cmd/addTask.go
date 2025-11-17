@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/armyrunner/task_manager/db"
+	"github.com/armyrunner/task_manager/models"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +17,14 @@ var addTaskCmd = &cobra.Command{
 			fmt.Println("Task Description Required...")
 			return
 		}
-		err := db.InsertData(task_description, due_date, start_date, finish_date, status, notes)
+		err := db.InsertData(models.Task{
+			Description: task_description,
+			DueDate: due_date,
+			StartDate: start_date,
+			FinishDate: finish_date,
+			Status: "Pending",
+			Notes: notes,
+		})
 		if err != nil {
 			fmt.Println("Failed to add task:", err)
 		} else {

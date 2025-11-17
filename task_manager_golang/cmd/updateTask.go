@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/armyrunner/task_manager/db"
+	"github.com/armyrunner/task_manager/models"
 	"github.com/spf13/cobra"
 )
 
@@ -20,24 +21,24 @@ var updateTaskCmd = &cobra.Command{
 		}
 
 		// Fetch existing task data
-		_, existingDesc, existingDue, existingStart, existingFinish, existingStatus, existingNotes, err := db.SelectData(taskID)
+		tasks, err := db.SelectData(models.Task{ID: taskID})
 		if err != nil {
 			fmt.Println("Failed to fetch existing task:", err)
 			return
 		}
 
 		// Merge new values with existing values (preserve existing if new is empty)
-		finalDesc := mergeString(description, existingDesc)
-		finalDue := mergeString(duedate, existingDue)
-		finalStart := mergeString(startdate, existingStart)
-		finalFinish := mergeString(finishdate, existingFinish)
-		finalStatus := mergeString(stat, existingStatus)
-		finalNotes := mergeString(information, existingNotes)
+		finalDesc := mergeString(description, tasks[0].Description)
+		finalDue := mergeString(duedate, tasks[0].DueDate)
+		finalStart := mergeString(startdate, tasks[0].StartDate)
+		finalFinish := mergeString(finishdate, tasks[0].FinishDate)
+		finalStatus := mergeString(stat, tasks[0].Status)
+		finalNotes := mergeString(information, tasks[0].Notes)
 
 		// Check if the task is being marked as complete
 		if finalStatus == "complete" || finalStatus == "Complete" || finalStatus == "completed" || finalStatus == "Completed" {
 			// Move the task to completed_tasks table
-			err = db.MoveCompletedTask(taskID)
+			err = db.MoveCompletedTask(models.Task{ID: taskID})
 			if err != nil {
 				fmt.Println("Failed to move completed task:", err)
 				return
@@ -46,7 +47,15 @@ var updateTaskCmd = &cobra.Command{
 			return
 		}
 
-		err = db.UpdateData(taskID, finalDesc, finalDue, finalStart, finalFinish, finalStatus, finalNotes)
+		err = db.UpdateData(models.Task{
+			ID: taskID,
+			Description: finalDesc,
+			DueDate: finalDue,
+			StartDate: finalStart,
+			FinishDate: finalFinish,
+			Status: finalStatus,
+			Notes: finalNotes,
+		})
 		if err != nil {
 			fmt.Println("Failed to update task:", err)
 		} else {
@@ -64,10 +73,10 @@ func mergeString(newValue, existingValue string) string {
 }
 
 
-var task_id, description, duedate, startdate, finishdate, stat, information string
+var task_ID, description, duedate, startdate, finishdate, stat, information string
 
 func init() {
-	updateTaskCmd.Flags().StringVarP(&task_id, "id", "i", "", "Task ID")
+	updateTaskCmd.Flags().StringVarP(&task_ID, "id", "i", "", "Task ID")
 	updateTaskCmd.Flags().StringVarP(&description, "task", "t", "", "Description of Task")
 	updateTaskCmd.Flags().StringVarP(&duedate, "due", "d", "", "Due Date of Task")
 	updateTaskCmd.Flags().StringVarP(&startdate, "start", "s", "", "Start Date of Task")

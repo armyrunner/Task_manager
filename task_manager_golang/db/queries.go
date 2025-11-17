@@ -7,14 +7,14 @@ import (
 	"github.com/armyrunner/task_manager/models"
 )
 
-func InsertData(description, due_date, start_date, finish_date, status, notes string) error {
+func InsertData(tks models.Task) error {
 	stmt, err := DB.Prepare("INSERT INTO initial_tasks (task_description, due_date, start_date, finish_date, status, notes) VALUES (?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(description, due_date, start_date, finish_date, status, notes)
+	_, err = stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes)
 	if err != nil {
 		return err
 	}
@@ -22,14 +22,14 @@ func InsertData(description, due_date, start_date, finish_date, status, notes st
 	return nil
 }
 
-func UpdateData(id int, description, due_date, start_date, finish_date, status, notes string) error {
+func UpdateData(tks models.Task) error {
 	stmt, err := DB.Prepare("UPDATE initial_tasks SET task_description = ?, due_date = ?, start_date = ?, finish_date = ?, status = ?, notes = ? WHERE id = ?")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(description, due_date, start_date, finish_date, status, notes, id)
+	_, err = stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, tks.ID)
 	if err != nil {
 		return err
 	}
@@ -37,14 +37,14 @@ func UpdateData(id int, description, due_date, start_date, finish_date, status, 
 	return nil
 }
 
-func DeleteData(id int) error {
+func DeleteData(tks models.Task) error {
 	stmt, err := DB.Prepare("DELETE FROM initial_tasks WHERE id = ?")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(id)
+	_, err = stmt.Exec(tks.ID)
 	if err != nil {
 		return err
 	}
@@ -52,29 +52,39 @@ func DeleteData(id int) error {
 	return nil
 }
 
-func SelectData(id int) (int, string, string, string, string, string, string, error) {
+func SelectData(tks models.Task) ([]models.Task, error) {
 	stmt, err := DB.Prepare("SELECT id, task_description, due_date, start_date, finish_date, status, notes FROM initial_tasks WHERE id = ?")
 	if err != nil {
-		return 0, "", "", "", "", "", "", err
+		return nil, err
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(id)
+	rows, err := stmt.Query(tks.ID)
 	if err != nil {
-		return 0, "", "", "", "", "", "", err
+		return nil, err
 	}
 	defer rows.Close()
 
-	rows.Next()
+	var tasks []models.Task
 
-	var taskID int
-	var description, due_date, start_date, finish_date, status, notes string
-	err = rows.Scan(&taskID, &description, &due_date, &start_date, &finish_date, &status, &notes)
-	if err != nil {
-		return 0, "", "", "", "", "", "", err
+	for rows.Next() {
+		var task models.Task
+		err := rows.Scan(
+			&task.ID,
+			&task.Description,
+			&task.DueDate,
+			&task.StartDate,
+			&task.FinishDate,
+			&task.Status,
+			&task.Notes,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, task)
 	}
 
-	return taskID, description, due_date, start_date, finish_date, status, notes, nil
+	return tasks, nil
 }
 
 func Select_Initial_Tasks() ([]models.Task, error) {
@@ -117,9 +127,9 @@ func Select_Initial_Tasks() ([]models.Task, error) {
 }
 
 // MoveCompletedTask moves a task from initial_tasks to completed_tasks when status is "complete"
-func MoveCompletedTask(id int) error {
+func MoveCompletedTask(tks models.Task) error {
 	// First, get the task data
-	originalID, description, due_date, start_date, finish_date, _, notes, err := SelectData(id)
+	tasks, err := SelectData(tks)
 	if err != nil {
 		return err
 	}
@@ -135,13 +145,13 @@ func MoveCompletedTask(id int) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(originalID, description, due_date, start_date, finish_date, completedStatus, notes)
+	_, err = stmt.Exec(tasks[0].OriginalID, tasks[0].Description, tasks[0].DueDate, tasks[0].StartDate, tasks[0].FinishDate, completedStatus, tasks[0].Notes)
 	if err != nil {
 		return err
 	}
 
 	// Delete from initial_tasks table
-	err = DeleteData(id)
+	err = DeleteData(tasks[0])
 	if err != nil {
 		return err
 	}
