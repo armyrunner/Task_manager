@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"fmt"
 	"strconv"
+	"strings"
 	"github.com/armyrunner/task_manager/db"
 	"github.com/armyrunner/task_manager/models"
 )
@@ -13,8 +14,14 @@ var deleteTaskCmd = &cobra.Command{
 	Short: "Delete a task",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Validate and trim task ID
+		taskIDStr := strings.TrimSpace(task_id)
+		if taskIDStr == "" {
+			fmt.Println("Error: Task ID is required. Please provide --id or -i flag")
+			return
+		}
 
-		taskID, err := strconv.Atoi(task_id)
+		taskID, err := strconv.Atoi(taskIDStr)
 		if err != nil {
 			fmt.Println("Invalid task ID:", err)
 			return

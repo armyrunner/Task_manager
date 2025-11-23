@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/armyrunner/task_manager/db"
 	"github.com/armyrunner/task_manager/models"
@@ -14,7 +15,14 @@ var updateTaskCmd = &cobra.Command{
 	Short: "update a task",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		taskID, err := strconv.Atoi(task_id)
+		// Validate and trim task ID
+		taskIDStr := strings.TrimSpace(task_ID)
+		if taskIDStr == "" {
+			fmt.Println("Error: Task ID is required. Please provide --id or -i flag")
+			return
+		}
+
+		taskID, err := strconv.Atoi(taskIDStr)
 		if err != nil {
 			fmt.Println("Invalid task ID:", err)
 			return
