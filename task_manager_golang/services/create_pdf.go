@@ -69,7 +69,7 @@ func addTaskTable(pdf *gofpdf.Fpdf, task []models.Task) {
 		// Each row is 10mm high, so we can fit about 24-25 rows per page
 		// But we need to account for headers (10mm) and some margin
 		// So we'll break every 23 rows to be safe
-		if i > 0 && i%23 == 0 {
+		if i > 0 && i%15 == 0 {
 			pdf.AddPage()
 			addTableHeaders() // Re-add headers on new page
 		}
