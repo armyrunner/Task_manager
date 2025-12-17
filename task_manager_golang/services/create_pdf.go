@@ -14,6 +14,7 @@ func PDF_Initial_Tasks(task_incomplete map[string][]models.Task, task_completed 
 	// Title
 	pdf.Cell(40, 10, "Task Report")
 	pdf.Ln(12)
+	
 
 	// Current Tasks
 	// pdf.SetFont("Arial", "B", 14)
@@ -31,8 +32,10 @@ func PDF_Initial_Tasks(task_incomplete map[string][]models.Task, task_completed 
 				pdf.Ln(12)
 				pdf.Cell(40, 10, "There are no "+strings.ToLower(category)+" tasks to display")
 				pdf.Ln(12)
+
 			} else {
 				addTaskTable(pdf, task_incomplete[category])
+				pdf.AddPage()
 			}
 		}
 	}

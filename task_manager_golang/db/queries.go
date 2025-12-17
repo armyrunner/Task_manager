@@ -149,7 +149,7 @@ func MoveCompletedTask(tks models.Task) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(tasks[0].OriginalID, tasks[0].Description, tasks[0].DueDate, tasks[0].StartDate, tasks[0].FinishDate, completedStatus, tasks[0].Notes, tasks[0].Category)
+	_, err = stmt.Exec(tasks[0].ID, tasks[0].Description, tasks[0].DueDate, tasks[0].StartDate, tasks[0].FinishDate, completedStatus, tasks[0].Notes, tasks[0].Category)
 	if err != nil {
 		return err
 	}
