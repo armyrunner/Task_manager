@@ -3,9 +3,10 @@ package services
 import (
 	"github.com/armyrunner/task_manager/models"
 	"github.com/jung-kurt/gofpdf"
+	"strings"
 )
 
-func PDF_Initial_Tasks(task_incomplete []models.Task, task_completed []models.Task, file_name string) error {
+func PDF_Initial_Tasks(task_incomplete map[string][]models.Task, task_completed []models.Task, file_name string) error {
 	pdf := gofpdf.New("L", "mm", "Letter", "")
 	pdf.AddPage()
 	pdf.SetFont("Arial", "B", 16)
@@ -15,15 +16,25 @@ func PDF_Initial_Tasks(task_incomplete []models.Task, task_completed []models.Ta
 	pdf.Ln(12)
 
 	// Current Tasks
-	pdf.SetFont("Arial", "B", 14)
-	pdf.Cell(40, 10, "Current Tasks")
-	pdf.Ln(10)
+	// pdf.SetFont("Arial", "B", 14)
+	// pdf.Cell(40, 10, "Current Tasks")
+	// pdf.Ln(10)
 
-	pdf.SetFont("Arial", "", 12)
 	if len(task_incomplete) == 0 {
 		pdf.Cell(40, 10, "There are no current tasks to display")
 	} else {
-		addTaskTable(pdf, task_incomplete)
+		for _, category := range models.CategoryOrder {	
+			pdf.SetFont("Arial", "B", 14)
+			pdf.Cell(40, 10, " *** "+strings.ToUpper(category)+" TASKS *** ")
+			pdf.Ln(12)
+			if len(task_incomplete[category]) == 0 {
+				pdf.Ln(12)
+				pdf.Cell(40, 10, "There are no "+strings.ToLower(category)+" tasks to display")
+				pdf.Ln(12)
+			} else {
+				addTaskTable(pdf, task_incomplete[category])
+			}
+		}
 	}
 
 	// Add some space before Completed Tasks

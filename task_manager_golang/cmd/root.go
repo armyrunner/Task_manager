@@ -34,4 +34,5 @@ func init() {
 	rootCMD.AddCommand(listCompletedTasksCmd)
 	rootCMD.AddCommand(generateReportCmd)
 	rootCMD.AddCommand(deleteTaskCmd)
+	rootCMD.AddCommand(listByCategoryCmd)
 }

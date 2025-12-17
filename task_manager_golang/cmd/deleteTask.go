@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"fmt"
 	"strconv"
 	"strings"
+
 	"github.com/armyrunner/task_manager/db"
 	"github.com/armyrunner/task_manager/models"
+	"github.com/spf13/cobra"
 )
 
 var deleteTaskCmd = &cobra.Command{
@@ -34,8 +35,6 @@ var deleteTaskCmd = &cobra.Command{
 		}
 	},
 }
-
-var task_id string
 
 func init() {
 	deleteTaskCmd.Flags().StringVarP(&task_id, "id", "i", "", "Task ID")

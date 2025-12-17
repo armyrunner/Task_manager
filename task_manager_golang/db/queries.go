@@ -2,19 +2,21 @@ package db
 
 import (
 	"database/sql"
+	"strings"
+
 	//"time"
 
 	"github.com/armyrunner/task_manager/models"
 )
 
 func InsertData(tks models.Task) error {
-	stmt, err := DB.Prepare("INSERT INTO initial_tasks (task_description, due_date, start_date, finish_date, status, notes) VALUES (?, ?, ?, ?, ?, ?)")
+	stmt, err := DB.Prepare("INSERT INTO initial_tasks (task_description, due_date, start_date, finish_date, status, notes, category) VALUES (?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes)
+	_, err = stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, strings.ToLower(tks.Category))
 	if err != nil {
 		return err
 	}
@@ -23,13 +25,13 @@ func InsertData(tks models.Task) error {
 }
 
 func UpdateData(tks models.Task) error {
-	stmt, err := DB.Prepare("UPDATE initial_tasks SET task_description = ?, due_date = ?, start_date = ?, finish_date = ?, status = ?, notes = ? WHERE id = ?")
+	stmt, err := DB.Prepare("UPDATE initial_tasks SET task_description = ?, due_date = ?, start_date = ?, finish_date = ?, status = ?, notes = ?, category = ? WHERE id = ?")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, tks.ID)
+	_, err = stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, strings.ToLower(tks.Category), tks.ID)
 	if err != nil {
 		return err
 	}
@@ -53,7 +55,7 @@ func DeleteData(tks models.Task) error {
 }
 
 func SelectData(tks models.Task) ([]models.Task, error) {
-	stmt, err := DB.Prepare("SELECT id, task_description, due_date, start_date, finish_date, status, notes FROM initial_tasks WHERE id = ?")
+	stmt, err := DB.Prepare("SELECT id, task_description, due_date, start_date, finish_date, status, notes, category FROM initial_tasks WHERE id = ?")
 	if err != nil {
 		return nil, err
 	}
@@ -77,6 +79,7 @@ func SelectData(tks models.Task) ([]models.Task, error) {
 			&task.FinishDate,
 			&task.Status,
 			&task.Notes,
+			&task.Category,
 		)
 		if err != nil {
 			return nil, err
@@ -89,7 +92,7 @@ func SelectData(tks models.Task) ([]models.Task, error) {
 
 func Select_Initial_Tasks() ([]models.Task, error) {
 	stmt, err := DB.Prepare(`
-		SELECT id, task_description, due_date, start_date, finish_date, status, notes
+		SELECT id, task_description, due_date, start_date, finish_date, status, notes, category
 		FROM initial_tasks
 	`)
 	if err != nil {
@@ -115,6 +118,7 @@ func Select_Initial_Tasks() ([]models.Task, error) {
 			&task.FinishDate,
 			&task.Status,
 			&task.Notes,
+			&task.Category,
 		)
 		if err != nil {
 			return nil, err
@@ -139,13 +143,13 @@ func MoveCompletedTask(tks models.Task) error {
 	//completedFinishDate := getCurrentDate()
 
 	// Insert into completed_tasks table
-	stmt, err := DB.Prepare("INSERT INTO completed_tasks (task_id, task_description, due_date, start_date, finish_date, status, notes) VALUES (?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := DB.Prepare("INSERT INTO completed_tasks (task_id, task_description, due_date, start_date, finish_date, status, notes, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(tasks[0].OriginalID, tasks[0].Description, tasks[0].DueDate, tasks[0].StartDate, tasks[0].FinishDate, completedStatus, tasks[0].Notes)
+	_, err = stmt.Exec(tasks[0].OriginalID, tasks[0].Description, tasks[0].DueDate, tasks[0].StartDate, tasks[0].FinishDate, completedStatus, tasks[0].Notes, tasks[0].Category)
 	if err != nil {
 		return err
 	}
@@ -168,9 +172,9 @@ func MoveCompletedTask(tks models.Task) error {
 // SelectCompletedTasks retrieves all completed tasks
 func SelectCompletedTasks() ([]models.Task, error) {
 	stmt, err := DB.Prepare(`
-		SELECT id, task_id, task_description, due_date, start_date, finish_date, status, notes
+		SELECT id, task_id, task_description, due_date, start_date, finish_date, status, notes, category
 		FROM completed_tasks
-		ORDER BY id DESC
+		ORDER BY id ASC
 	`)
 	if err != nil {
 		return nil, err
@@ -197,6 +201,7 @@ func SelectCompletedTasks() ([]models.Task, error) {
 			&task.FinishDate,
 			&task.Status,
 			&task.Notes,
+			&task.Category,
 		)
 		if err != nil {
 			return nil, err
@@ -205,6 +210,47 @@ func SelectCompletedTasks() ([]models.Task, error) {
 			task.OriginalID = int(originalTaskID.Int64)
 		} else {
 			task.OriginalID = 0
+		}
+		tasks = append(tasks, task)
+	}
+
+	return tasks, nil
+}
+
+func Select_Initial_Tasks_By_Category(tks models.Task) ([]models.Task, error) {
+	stmt, err := DB.Prepare(`
+		SELECT id, task_description, due_date, start_date, finish_date, status, notes, category
+		FROM initial_tasks
+		WHERE category = ?
+		ORDER BY id DESC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(tks.Category)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []models.Task
+
+	for rows.Next() {
+		var task models.Task
+		err := rows.Scan(
+			&task.ID,
+			&task.Description,
+			&task.DueDate,
+			&task.StartDate,
+			&task.FinishDate,
+			&task.Status,
+			&task.Notes,
+			&task.Category,
+		)
+		if err != nil {
+			return nil, err
 		}
 		tasks = append(tasks, task)
 	}

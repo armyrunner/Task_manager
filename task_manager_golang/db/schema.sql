@@ -20,3 +20,7 @@ CREATE TABLE IF NOT EXISTS completed_tasks(
     status TEXT,
     notes TEXT
     );
+
+-- Column migrations are handled in db.go runMigrations()
+-- ALTER TABLE initial_tasks ADD COLUMN category TEXT;
+-- ALTER TABLE completed_tasks ADD COLUMN category TEXT;

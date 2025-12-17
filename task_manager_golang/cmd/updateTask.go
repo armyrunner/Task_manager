@@ -16,7 +16,7 @@ var updateTaskCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Validate and trim task ID
-		taskIDStr := strings.TrimSpace(task_ID)
+		taskIDStr := strings.TrimSpace(task_id)
 		if taskIDStr == "" {
 			fmt.Println("Error: Task ID is required. Please provide --id or -i flag")
 			return
@@ -36,12 +36,13 @@ var updateTaskCmd = &cobra.Command{
 		}
 
 		// Merge new values with existing values (preserve existing if new is empty)
-		finalDesc := mergeString(description, tasks[0].Description)
-		finalDue := mergeString(duedate, tasks[0].DueDate)
-		finalStart := mergeString(startdate, tasks[0].StartDate)
-		finalFinish := mergeString(finishdate, tasks[0].FinishDate)
-		finalStatus := mergeString(stat, tasks[0].Status)
-		finalNotes := mergeString(information, tasks[0].Notes)
+		finalDesc := mergeString(task_description, tasks[0].Description)
+		finalDue := mergeString(due_date, tasks[0].DueDate)
+		finalStart := mergeString(start_date, tasks[0].StartDate)
+		finalFinish := mergeString(finish_date, tasks[0].FinishDate)
+		finalStatus := mergeString(status, tasks[0].Status)
+		finalNotes := mergeString(notes, tasks[0].Notes)
+		finalCategory := mergeString(category, tasks[0].Category)
 
 		// Check if the task is being marked as complete
 		if finalStatus == "complete" || finalStatus == "Complete" || finalStatus == "completed" || finalStatus == "Completed" {
@@ -56,13 +57,14 @@ var updateTaskCmd = &cobra.Command{
 		}
 
 		err = db.UpdateData(models.Task{
-			ID: taskID,
+			ID:          taskID,
 			Description: finalDesc,
-			DueDate: finalDue,
-			StartDate: finalStart,
-			FinishDate: finalFinish,
-			Status: finalStatus,
-			Notes: finalNotes,
+			DueDate:     finalDue,
+			StartDate:   finalStart,
+			FinishDate:  finalFinish,
+			Status:      finalStatus,
+			Notes:       finalNotes,
+			Category:    finalCategory,
 		})
 		if err != nil {
 			fmt.Println("Failed to update task:", err)
@@ -80,15 +82,13 @@ func mergeString(newValue, existingValue string) string {
 	return existingValue
 }
 
-
-var task_ID, description, duedate, startdate, finishdate, stat, information string
-
 func init() {
-	updateTaskCmd.Flags().StringVarP(&task_ID, "id", "i", "", "Task ID")
-	updateTaskCmd.Flags().StringVarP(&description, "task", "t", "", "Description of Task")
-	updateTaskCmd.Flags().StringVarP(&duedate, "due", "d", "", "Due Date of Task")
-	updateTaskCmd.Flags().StringVarP(&startdate, "start", "s", "", "Start Date of Task")
-	updateTaskCmd.Flags().StringVarP(&finishdate, "finish", "f", "", "Finish Date of Task")
-	updateTaskCmd.Flags().StringVarP(&stat, "status", "c", "", "Task Status")
-	updateTaskCmd.Flags().StringVarP(&information, "notes", "n", "", "Any Notes")
+	updateTaskCmd.Flags().StringVarP(&task_id, "id", "i", "", "Task ID")
+	updateTaskCmd.Flags().StringVarP(&task_description, "task", "t", "", "Description of Task")
+	updateTaskCmd.Flags().StringVarP(&due_date, "due", "d", "", "Due Date of Task")
+	updateTaskCmd.Flags().StringVarP(&start_date, "start", "s", "", "Start Date of Task")
+	updateTaskCmd.Flags().StringVarP(&finish_date, "finish", "f", "", "Finish Date of Task")
+	updateTaskCmd.Flags().StringVarP(&status, "status", "c", "", "Task Status")
+	updateTaskCmd.Flags().StringVarP(&notes, "notes", "n", "", "Any Notes")
+	updateTaskCmd.Flags().StringVarP(&category, "category", "g", "", "Category of Task")
 }

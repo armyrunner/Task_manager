@@ -53,5 +53,78 @@ func OpenDatabase(db_path, schema_filename string) error {
 		return fmt.Errorf("executing schema: %w", err)
 	}
 
+	// Run migrations for new columns
+	if err := runMigrations(); err != nil {
+		return fmt.Errorf("running migrations: %w", err)
+	}
+
+	return nil
+}
+
+// columnExists checks if a column exists in a table
+func columnExists(tableName, columnName string) (bool, error) {
+	query := fmt.Sprintf("PRAGMA table_info(%s)", tableName)
+	rows, err := DB.Query(query)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var cid int
+		var name, ctype string
+		var notnull, pk int
+		var dfltValue sql.NullString
+		if err := rows.Scan(&cid, &name, &ctype, &notnull, &dfltValue, &pk); err != nil {
+			return false, err
+		}
+		if name == columnName {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// addColumnIfNotExists adds a column to a table if it doesn't already exist
+// Uses DEFAULT ” for TEXT columns to prevent NULL values
+func addColumnIfNotExists(tableName, columnName, columnType string) error {
+	exists, err := columnExists(tableName, columnName)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		// Add DEFAULT '' for TEXT columns to prevent NULLs
+		defaultClause := ""
+		if columnType == "TEXT" {
+			defaultClause = " DEFAULT ''"
+		}
+		query := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s%s", tableName, columnName, columnType, defaultClause)
+		_, err = DB.Exec(query)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// runMigrations adds any new columns that don't exist yet
+func runMigrations() error {
+	// Add category column to initial_tasks if it doesn't exist
+	if err := addColumnIfNotExists("initial_tasks", "category", "TEXT"); err != nil {
+		return err
+	}
+	// Add category column to completed_tasks if it doesn't exist
+	if err := addColumnIfNotExists("completed_tasks", "category", "TEXT"); err != nil {
+		return err
+	}
+
+	// Fix any existing NULL values (from before DEFAULT was added)
+	DB.Exec("UPDATE initial_tasks SET category = '' WHERE category IS NULL")
+	DB.Exec("UPDATE completed_tasks SET category = '' WHERE category IS NULL")
+
+	// Normalize all categories to lowercase
+	DB.Exec("UPDATE initial_tasks SET category = LOWER(category)")
+	DB.Exec("UPDATE completed_tasks SET category = LOWER(category)")
+
 	return nil
 }

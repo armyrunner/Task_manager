@@ -19,11 +19,12 @@ var addTaskCmd = &cobra.Command{
 		}
 		err := db.InsertData(models.Task{
 			Description: task_description,
-			DueDate: due_date,
-			StartDate: start_date,
-			FinishDate: finish_date,
-			Status: "Pending",
-			Notes: notes,
+			DueDate:     due_date,
+			StartDate:   start_date,
+			FinishDate:  finish_date,
+			Status:      "Pending",
+			Notes:       notes,
+			Category:    category,
 		})
 		if err != nil {
 			fmt.Println("Failed to add task:", err)
@@ -33,8 +34,6 @@ var addTaskCmd = &cobra.Command{
 	},
 }
 
-var task_description, due_date, start_date, finish_date, status, notes string
-
 func init() {
 	addTaskCmd.Flags().StringVarP(&task_description, "task", "t", "", "Description of Task")
 	addTaskCmd.Flags().StringVarP(&due_date, "due", "d", "", "Due Date of Task")
@@ -42,4 +41,5 @@ func init() {
 	addTaskCmd.Flags().StringVarP(&finish_date, "finish", "f", "", "Finish Date of Task")
 	addTaskCmd.Flags().StringVarP(&status, "status", "c", "", "Task Status")
 	addTaskCmd.Flags().StringVarP(&notes, "notes", "n", "", "Any Notes")
+	addTaskCmd.Flags().StringVarP(&category, "category", "g", "", "Category of Task")
 }

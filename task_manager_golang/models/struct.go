@@ -9,4 +9,5 @@ type Task struct {
 	FinishDate  string
 	Status      string
 	Notes       string
+	Category    string
 }
