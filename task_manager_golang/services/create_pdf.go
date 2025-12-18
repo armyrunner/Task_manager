@@ -90,9 +90,9 @@ func addTaskTable(pdf *gofpdf.Fpdf, task []models.Task) {
 
 		// Truncate long text to prevent overflow
 		description := task.Description
-		if len(description) > 25 {
-			description = description[:22] + "..."
-		}
+		//if len(description) > 25 {
+		//	description = description[:22] + "..."
+		//}
 
 		notes := task.Notes
 		if len(notes) > 50 {

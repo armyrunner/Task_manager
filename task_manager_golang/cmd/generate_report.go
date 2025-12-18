@@ -18,13 +18,15 @@ var generateReportCmd = &cobra.Command{
 		report_categories := make(map[string][]models.Task)
 	
 		for _, category := range models.CategoryOrder {
-			report_category,err := db.Select_Initial_Tasks_By_Category(models.Task{Category: category})
+			report_category,err := db.Select_Initial_Tasks_By_Category(&models.Task{Category: category})
 			if err != nil {
 				fmt.Println("Failed to generate initial tasks report:", err)
 				return
 			}
 			report_categories[category] = report_category
 		}
+
+		
 
 		report_completed,err := db.SelectCompletedTasks()
 		if err != nil {

@@ -27,7 +27,7 @@ var deleteTaskCmd = &cobra.Command{
 			fmt.Println("Invalid task ID:", err)
 			return
 		}
-		err = db.DeleteData(models.Task{ID: taskID})
+		err = db.DeleteData(&models.Task{ID: taskID})
 		if err != nil {
 			fmt.Println("Failed to add task:", err)
 		} else {

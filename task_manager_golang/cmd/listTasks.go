@@ -17,6 +17,9 @@ var listTasksCmd = &cobra.Command{
 	Short: "List all Initial tasks",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
+
+
+
 		tasks, err := db.Select_Initial_Tasks()
 		if err != nil {
 			fmt.Println("Failed to fetch tasks:", err)

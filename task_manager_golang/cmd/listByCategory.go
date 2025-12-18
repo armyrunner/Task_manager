@@ -29,7 +29,7 @@ var listByCategoryCmd = &cobra.Command{
 }
 
 func listSingleCategory(categoryStr string) {
-	tasks, err := db.Select_Initial_Tasks_By_Category(models.Task{Category: categoryStr})
+	tasks, err := db.Select_Initial_Tasks_By_Category(&models.Task{Category: categoryStr})
 	if err != nil {
 		fmt.Println("Failed to fetch tasks:", err)
 		return

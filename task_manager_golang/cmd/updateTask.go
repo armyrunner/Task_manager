@@ -29,7 +29,7 @@ var updateTaskCmd = &cobra.Command{
 		}
 
 		// Fetch existing task data
-		tasks, err := db.SelectData(models.Task{ID: taskID})
+		tasks, err := db.SelectData(&models.Task{ID: taskID})
 		if err != nil {
 			fmt.Println("Failed to fetch existing task:", err)
 			return
@@ -47,7 +47,7 @@ var updateTaskCmd = &cobra.Command{
 		// Check if the task is being marked as complete
 		if finalStatus == "complete" || finalStatus == "Complete" || finalStatus == "completed" || finalStatus == "Completed" {
 			// Move the task to completed_tasks table
-			err = db.MoveCompletedTask(models.Task{ID: taskID})
+			err = db.MoveCompletedTask(&models.Task{ID: taskID, Description: finalDesc, DueDate: finalDue, StartDate: finalStart, FinishDate: finalFinish, Status: finalStatus, Notes: finalNotes, Category: finalCategory})
 			if err != nil {
 				fmt.Println("Failed to move completed task:", err)
 				return
@@ -56,7 +56,7 @@ var updateTaskCmd = &cobra.Command{
 			return
 		}
 
-		err = db.UpdateData(models.Task{
+		err = db.UpdateData(&models.Task{
 			ID:          taskID,
 			Description: finalDesc,
 			DueDate:     finalDue,

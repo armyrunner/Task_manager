@@ -17,7 +17,7 @@ var addTaskCmd = &cobra.Command{
 			fmt.Println("Task Description Required...")
 			return
 		}
-		err := db.InsertData(models.Task{
+		err := db.InsertData(&models.Task{
 			Description: task_description,
 			DueDate:     due_date,
 			StartDate:   start_date,
