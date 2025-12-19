@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/armyrunner/task_manager/db"
 	"github.com/armyrunner/task_manager/models"
@@ -39,7 +41,6 @@ func listSingleCategory(categoryStr string) {
 		fmt.Printf("No tasks found for category: %s\n", categoryStr)
 		return
 	}
-	printCategoryHeader(categoryStr)
 	printTasks(tasks)
 }
 
@@ -72,7 +73,6 @@ func listAllByCategory() {
 
 	for _, cat := range categoryOrder {
 		if tasks, exists := categories[cat]; exists {
-			printCategoryHeader(cat)
 			printTasks(tasks)
 			fmt.Println()
 			printed[cat] = true
@@ -82,31 +82,22 @@ func listAllByCategory() {
 	// Print any remaining categories not in the predefined order
 	for cat, tasks := range categories {
 		if !printed[cat] {
-			printCategoryHeader(cat)
 			printTasks(tasks)
 			fmt.Println()
 		}
 	}
 }
 
-func printCategoryHeader(category string) {
-	fmt.Printf("\n=== %s TASKS ===\n", strings.ToUpper(category))
-	fmt.Printf("\n")
-	fmt.Println("ID   Description        Due Date    Start       Finish      Status       Notes")
-	fmt.Println("---  -----------        --------    -----       ------      ------       -----")
-}
-
 func printTasks(tasks []models.Task) {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(w, "ID\tDescription\tDue Date\tStart\tFinish\tStatus\tNotes\tCategory")
+	fmt.Fprintln(w, "---\t-----------\t--------\t-----\t------\t------\t------\t------")
 	for _, task := range tasks {
-		fmt.Printf("%-4d %-18s %-11s %-11s %-11s %-12s %s\n",
-			task.ID,
-			truncateString(task.Description, 18),
-			task.DueDate,
-			task.StartDate,
-			task.FinishDate,
-			task.Status,
-			task.Notes)
+		fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+			task.ID, task.Description, task.DueDate, task.StartDate,
+			task.FinishDate, task.Status, task.Notes, task.Category)
 	}
+	w.Flush()
 }
 
 func init() {
