@@ -1,0 +1,252 @@
+package db
+
+import (
+	"database/sql"
+	"strings"
+
+	//"time"
+
+	"github.com/armyrunner/task_manager/models"
+)
+
+func InsertData(tks *models.Task) error {
+	stmt, err := DB.Prepare("INSERT INTO initial_tasks (task_description, due_date, start_date, finish_date, status, notes, category) VALUES (?, ?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, strings.ToLower(tks.Category))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateData(tks *models.Task) error {
+	stmt, err := DB.Prepare("UPDATE initial_tasks SET task_description = ?, due_date = ?, start_date = ?, finish_date = ?, status = ?, notes = ?, category = ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, strings.ToLower(tks.Category), tks.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteData(tks *models.Task) error {
+	stmt, err := DB.Prepare("DELETE FROM initial_tasks WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(tks.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SelectData(tks *models.Task) ([]models.Task, error) {
+	stmt, err := DB.Prepare("SELECT id, task_description, due_date, start_date, finish_date, status, notes, category FROM initial_tasks WHERE id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(tks.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []models.Task
+
+	for rows.Next() {
+		var task models.Task
+		err := rows.Scan(
+			&task.ID,
+			&task.Description,
+			&task.DueDate,
+			&task.StartDate,
+			&task.FinishDate,
+			&task.Status,
+			&task.Notes,
+			&task.Category,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, task)
+	}
+
+	return tasks, nil
+}
+
+func Select_Initial_Tasks() ([]models.Task, error) {
+	stmt, err := DB.Prepare(`
+		SELECT id, task_description, due_date, start_date, finish_date, status, notes, category
+		FROM initial_tasks
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []models.Task
+
+	for rows.Next() {
+		var task models.Task
+		err := rows.Scan(
+			&task.ID,
+			&task.Description,
+			&task.DueDate,
+			&task.StartDate,
+			&task.FinishDate,
+			&task.Status,
+			&task.Notes,
+			&task.Category,
+		)
+		if err != nil {
+			return nil, err
+		}
+		task.OriginalID = 0 // Initial tasks don't have an original ID
+		tasks = append(tasks, task)
+	}
+
+	return tasks, nil
+}
+
+// MoveCompletedTask moves a task from initial_tasks to completed_tasks when status is "complete"
+func MoveCompletedTask(tks *models.Task) error {
+	// Update the status and finish date to reflect completion
+	completedStatus := "Completed"
+	//completedFinishDate := getCurrentDate()
+
+	// Insert into completed_tasks table
+	stmt, err := DB.Prepare("INSERT INTO completed_tasks (task_id, task_description, due_date, start_date, finish_date, status, notes, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(tks.ID, tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, completedStatus, tks.Notes, tks.Category)
+	if err != nil {
+		return err
+	}
+
+	// Delete from initial_tasks table
+	err = DeleteData(tks)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// getCurrentDate returns the current date in YYYY-MM-DD format
+// func getCurrentDate() string {
+// 	now := time.Now()
+// 	return now.Format("2006-01-02")
+// }
+
+// SelectCompletedTasks retrieves all completed tasks
+func SelectCompletedTasks() ([]models.Task, error) {
+	stmt, err := DB.Prepare(`
+		SELECT id, task_id, task_description, due_date, start_date, finish_date, status, notes, category
+		FROM completed_tasks
+
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []models.Task
+
+	for rows.Next() {
+		var task models.Task
+		var originalTaskID sql.NullInt64
+		err := rows.Scan(
+			&task.ID,
+			&originalTaskID,
+			&task.Description,
+			&task.DueDate,
+			&task.StartDate,
+			&task.FinishDate,
+			&task.Status,
+			&task.Notes,
+			&task.Category,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if originalTaskID.Valid {
+			task.OriginalID = int(originalTaskID.Int64)
+		} else {
+			task.OriginalID = 0
+		}
+		tasks = append(tasks, task)
+	}
+
+	return tasks, nil
+}
+
+func Select_Initial_Tasks_By_Category(tks *models.Task) ([]models.Task, error) {
+	stmt, err := DB.Prepare(`
+		SELECT id, task_description, due_date, start_date, finish_date, status, notes, category
+		FROM initial_tasks
+		WHERE category = ? 
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(tks.Category)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []models.Task
+
+	for rows.Next() {
+		var task models.Task
+		err := rows.Scan(
+			&task.ID,
+			&task.Description,
+			&task.DueDate,
+			&task.StartDate,
+			&task.FinishDate,
+			&task.Status,
+			&task.Notes,
+			&task.Category,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, task)
+	}
+
+	return tasks, nil
+}
