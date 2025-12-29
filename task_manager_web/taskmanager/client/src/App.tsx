@@ -9,7 +9,7 @@ function App() {
 
   return (
     <>
-      <NavBar title='Task Manager' searchButton='Search'/>
+      <NavBar title='Task Manager' signInButton='Sign In'/>
       <Cover/>
     </>
   )

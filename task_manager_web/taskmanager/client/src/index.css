@@ -13,12 +13,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
+.nav-link {
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  color: #097969	;
+  text-decoration: none;
 }
-a:hover {
+.nav-link:hover {
   color: #535bf2;
 }
 
