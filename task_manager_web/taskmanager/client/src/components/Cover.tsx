@@ -1,7 +1,7 @@
 
-import DeskWork from '../assets/deskwork.jpg';      // your original image
-import Nietjuhart from '../assets/nietjuhart.jpg';     // add 2 more real images
-import RockStatue from '../assets/rockformation.jpg';
+import DeskWork from '../assets/school.jpg';      // your original image
+import Nietjuhart from '../assets/cat.jpg';     // add 2 more real images
+// import RockStatue from '../assets/rockformation.jpg';
 
 const carouselQuotes = [
   {
@@ -52,7 +52,7 @@ function Cover() {
 
       {/* Slides with overlay text */}
       <div className="carousel-inner">
-        {[DeskWork, Nietjuhart, RockStatue].map((imgSrc, index) => (
+        {[DeskWork, Nietjuhart].map((imgSrc, index) => (
           <div
             key={index}
             className={`carousel-item ${index === 0 ? 'active' : ''}`}
