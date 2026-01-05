@@ -1,9 +1,20 @@
+//import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import {Link, useNavigate } from "react-router-dom";
+
+
 interface Props {
     title: string;
-    signInButton: string;
+    signInButtonText: string;
   }
   
-  function NavBar({ title, signInButton }: Props) {
+  function NavBar({ title, signInButtonText}: Props) {
+    const navigate = useNavigate();
+
+    const handleSignInClick = () => {
+      navigate('/signin')
+
+    }
+
     return (
       <nav className="navbar navbar-expand-lg fixed-top shadow-sm" data-bs-theme="light">
         <div className="container-fluid">
@@ -28,25 +39,29 @@ interface Props {
             {/* Centered nav links */}
             <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <a href="#home" className="nav-link">Home</a>
+                <Link to="/home" className="nav-link">Home</Link>
               </li>
               <li className="nav-item">
-                <a href="#about" className="nav-link">About Us</a>
+                <Link to="/about" className="nav-link">About Us</Link>
               </li>
               <li className="nav-item">
-                <a href="#contact" className="nav-link">Contact</a>
+                <Link to="/contact" className="nav-link">Contact</Link>
               </li>
               <li className="nav-item">
-                <a href="#overview" className="nav-link">Overview</a>
+                <Link to="/overview" className="nav-link">Overview</Link>
               </li>
             </ul>
   
             {/* Right side button */}
-            <form role="search" className="d-flex">
-              <button className="btn btn-outline-success" type="submit">
-                {signInButton}
+            <div className="d-flex">
+              <button 
+                  onClick={handleSignInClick} 
+                  className="btn btn-outline-success" 
+                  type="button"
+                  >
+                {signInButtonText}
               </button>
-            </form>
+            </div>
           </div>
         </div>
       </nav>

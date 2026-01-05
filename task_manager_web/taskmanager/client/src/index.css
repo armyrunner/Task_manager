@@ -23,9 +23,12 @@
 }
 
 body {
+  font-family:'Times New Roman', Times, serif;
   margin: 0;
   display: flex;
   place-items: center;
+  justify-content: center;
+  flex-direction: column;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -52,6 +55,16 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+.content{
+  background-color: #fff;
+  border-radius: 25px;
+  position: relative;
+  overflow: hidden;
+  width: 50vw;
+  min-height: 480px;
+  max-width: 100%;
 }
 
 @media (prefers-color-scheme: light) {

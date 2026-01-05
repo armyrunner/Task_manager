@@ -18,7 +18,7 @@ const carouselQuotes = [
   }
 ];
 
-function Cover() {
+function Header() {
   return (
     <div
       id="carouselExampleIndicators"
@@ -109,4 +109,4 @@ function Cover() {
   );
 }
 
-export default Cover;
+export default Header;
