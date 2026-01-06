@@ -15,7 +15,7 @@
 
 .nav-link {
   font-weight: 500;
-  color: #097969	;
+  color: #097969;
   text-decoration: none;
 }
 .nav-link:hover {
@@ -23,14 +23,12 @@
 }
 
 body {
-  font-family:'Times New Roman', Times, serif;
+  font-family: "Times New Roman", Times, serif;
   margin: 0;
   display: flex;
-  place-items: center;
-  justify-content: center;
-  flex-direction: column;
+  align-items: center;
   min-width: 320px;
-  min-height: 100vh;
+  height: 100vh;
 }
 
 h1 {
@@ -39,7 +37,7 @@ h1 {
 }
 
 button {
-  border-radius: 8px;
+  border-radius: 8fpx;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
@@ -57,14 +55,43 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-.content{
+.forgotpassordlink {
+  color: darkblue;
+  text-decoration: none;
+}
+.forgotpassordlink:hover {
+  color: darkred;
+}
+
+
+.content {
   background-color: #fff;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding-right: 30px;
+  padding-left: 60px;
   border-radius: 25px;
   position: relative;
   overflow: hidden;
   width: 50vw;
   min-height: 480px;
-  max-width: 100%;
+  max-width: 60%;
+  background: linear-gradient(to right, #C1E1C1, #AEC6CF, #D5CEBD);
+
+}
+
+.btn:hover {
+  background-color: darkblue;
+}
+
+.header-text h1,
+.forgot a {
+  color: darkblue;
+}
+
+.spacing {
+  padding: 30px;
 }
 
 @media (prefers-color-scheme: light) {

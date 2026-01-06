@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import NavBar from './components/NavBar';
 
-import SigInRegister from './components/SignInRegister';
+import SignIn from './components/SignIn';
+import Register from './components/Register';
 import HomePage from './components/HomePage';
 //import AboutPage from './components/AboutPage'
 //import ContactPage from './components/ContactPage'
@@ -15,7 +16,6 @@ import HomePage from './components/HomePage';
 
 import './App.css'
 
-
 function App() {
 
 
@@ -24,8 +24,10 @@ function App() {
     <BrowserRouter>
         <NavBar title='Task Manager' signInButtonText='Sign In' />
       <Routes>
+        <Route path='/' element={<HomePage/>}/>
         <Route path='/home' element={<HomePage/>}/>
-        <Route path='/signin' element={<SigInRegister/>}/>
+        <Route path='/signin' element={<SignIn/>}/>
+        <Route path='/register' element={<Register/>}/>
         {/* <Route path='/about' element={<SignInPage/>}/> */}
         {/* <Route path='/about' element={<SignInPage/>}/> */}
         {/* <Route path='/about' element={<SignInPage/>}/> */}
