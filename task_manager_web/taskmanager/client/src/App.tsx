@@ -3,14 +3,14 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import NavBar from './components/NavBar';
 
 import SignIn from './components/SignIn';
-import Register from './components/Register';
-import HomePage from './components/HomePage';
+import Register from './routes/Register';
+import HomePage from './routes/HomePage';
 import TaskDashboard from './components/TaskDashboard'
 import { AuthProvider } from './components/AuthProvider';
-import AboutPage from './components/AboutPage'
-import ContactPage from './components/ContactPage'
-import OverviewPage  from './components/OverviewPage'
-
+import AboutPage from './routes/AboutPage'
+import ContactPage from './routes/ContactPage'
+import OverviewPage  from './routes/OverviewPage'
+import AddTask from './routes/AddTask'
 
 //import PageNotFound from './components/PageNotFound'
 
@@ -31,7 +31,9 @@ function App() {
         <Route path='/home' element={<HomePage/>}/>
         <Route path='/signin' element={<SignIn/>}/>
         <Route path='/register' element={<Register/>}/>
-        <Route path='/taskdashboard' element={<TaskDashboard/>}/>
+        <Route path='/taskdashboard' element={<TaskDashboard/>}>
+          <Route path='addtask' element={<AddTask/>}/>
+        </Route>
         <Route path='/about' element={<AboutPage/>}/>
         <Route path='/contact' element={<ContactPage/>}/>
         <Route path='/overview' element={<OverviewPage/>}/>

@@ -1,6 +1,6 @@
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import styles from "./SignIn.module.css";
+import styles from "../components/SignIn.module.css";
 //import { Link } from "react-router-dom";
 
 function Register() {

@@ -24,6 +24,7 @@ import {
 import "@coreui/coreui/dist/css/coreui.min.css";
 import styles from "./TaskDashboard.module.css";
 import { useState, useEffect } from "react";
+import { Outlet, Link } from "react-router-dom";
 
 const Dashboard = () => {
   const [categories, setCategories] = useState<string[]>([]);
@@ -56,9 +57,8 @@ const Dashboard = () => {
             <CIcon customClassName="nav-icon text-primary" icon={cilSitemap} />
             Add Category
           </CNavItem>
-          <CNavItem href="#">
-            <CIcon customClassName="nav-icon text-primary" icon={cilPlus} />
-            Add Task
+          <CNavItem>
+            <Link to="addtask" className="nav-link"><CIcon customClassName="nav-icon text-primary" icon={cilPlus} /> Add Task</Link>
           </CNavItem>
           <CNavItem href="#">
             <CIcon customClassName="nav-icon text-info" icon={cilPenAlt} />
@@ -104,6 +104,9 @@ const Dashboard = () => {
           <CSidebarToggler />
         </CSidebarHeader>
       </CSidebar>
+      <div className={styles.mainContent}>
+        <Outlet />
+      </div>
     </div>
   );
 };
