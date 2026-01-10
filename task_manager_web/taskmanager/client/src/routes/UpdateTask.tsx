@@ -1,16 +1,16 @@
 import {
-  CForm,
-  CFormInput,
-  CButton,
-  CFormLabel,
-  CFormSelect,
-  CFormTextarea,
-  CCol,
-  CRow,
-  CCard,
-  CCardHeader,
-  CCardBody,
-  CCardFooter,
+    CForm,
+    CFormInput,
+    CButton,
+    CFormLabel,
+    CFormSelect,
+    CFormTextarea,
+    CCol,
+    CRow,
+    CCard,
+    CCardHeader,
+    CCardBody,
+    CCardFooter,
   CModal,
   CModalHeader,
   CModalBody,
@@ -18,14 +18,14 @@ import {
   CModalFooter,
   CInputGroup,
   CTooltip,
-} from "@coreui/react";
+  } from "@coreui/react";
 import { cilSave, cilX, cilSearch, cilPlus } from "@coreui/icons";
-import CIcon from "@coreui/icons-react";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+  import CIcon from "@coreui/icons-react";
+  import React, { useState } from "react";
+  import { useNavigate } from "react-router-dom";
+  
 function UpdateTask() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const [categories, setCategories] = useState<{value: string, label: string}[]>([
@@ -35,15 +35,15 @@ function UpdateTask() {
     {value: "other", label: "Other"},
   ]);
 
-  const [task, setTask] = useState({
-    name: "",
-    dueDate: "",
-    startDate: "",
-    finishDate: "",
-    status: "pending",
+    const [task, setTask] = useState({
+      name: "",
+      dueDate: "",
+      startDate: "",
+      finishDate: "",
+      status: "pending",
     category: "",
-    notes: "",
-  });
+      notes: "",
+    });
 
   const handleOpenModal = () => {
     setShowModal(true);
@@ -66,35 +66,35 @@ function UpdateTask() {
     setTask({ ...task, category: newCat.value });
     handleCloseModal();
   };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setTask((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  
+    const handleChange = (
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
+      const { name, value } = e.target;
+      setTask((prev) => ({ ...prev, [name]: value }));
+    };
+  
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
     console.log("Updated Task:", task);
-    // TODO: Send to API
-    setTask({
-      name: "",
-      dueDate: "",
-      startDate: "",
-      finishDate: "",
-      status: "pending",
+      // TODO: Send to API
+      setTask({
+        name: "",
+        dueDate: "",
+        startDate: "",
+        finishDate: "",
+        status: "pending",
       category: "",
-      notes: "",
-    });
-  };
-
-  const handleCancel = () => {
-    navigate("/taskdashboard");
-  };
-
-  return (
-    <div className="d-flex justify-content-center align-items-start w-100 h-100 pt-4">
+        notes: "",
+      });
+    };
+  
+    const handleCancel = () => {
+      navigate("/taskdashboard");
+    };
+  
+    return (
+      <div className="d-flex justify-content-center align-items-start w-100 h-100 pt-4">
       <CCard style={{ maxWidth: '600px', width: '100%' }}>
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <strong>Update Task</strong>
@@ -106,11 +106,11 @@ function UpdateTask() {
               style={{ maxWidth: '200px' }}
             />
             <CButton type="button" color="primary" variant="outline">
-              <CIcon icon={cilSearch} />
+              <CIcon icon={cilSearch} /> 
             </CButton>
           </div>
         </CCardHeader>
-
+  
         <CForm onSubmit={handleSubmit}>
           <CCardBody>
             <CRow>
@@ -239,8 +239,9 @@ function UpdateTask() {
           </CButton>
         </CModalFooter>
       </CModal>
-    </div>
-  );
-}
-
+      </div>
+    );
+  }
+  
 export default UpdateTask;
+  

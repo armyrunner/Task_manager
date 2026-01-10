@@ -118,6 +118,15 @@ func runMigrations() error {
 		return err
 	}
 
+	// Add user_id column to initial_tasks if it doesn't exist
+	if err := addColumnIfNotExists("initial_tasks", "user_id", "INTEGER"); err != nil {
+		return err
+	}
+	// Add user_id column to completed_tasks if it doesn't exist
+	if err := addColumnIfNotExists("completed_tasks", "user_id", "INTEGER"); err != nil {
+		return err
+	}
+
 	// Fix any existing NULL values (from before DEFAULT was added)
 	DB.Exec("UPDATE initial_tasks SET category = '' WHERE category IS NULL")
 	DB.Exec("UPDATE completed_tasks SET category = '' WHERE category IS NULL")

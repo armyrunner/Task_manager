@@ -1,29 +1,29 @@
 import {
-  CForm,
-  CFormInput,
-  CButton,
-  CFormLabel,
-  CFormSelect,
-  CFormTextarea,
-  CCol,
-  CRow,
-  CCard,
-  CCardHeader,
-  CCardBody,
-  CCardFooter,
+    CForm,
+    CFormInput,
+    CButton,
+    CFormLabel,
+    CFormSelect,
+    CFormTextarea,
+    CCol,
+    CRow,
+    CCard,
+    CCardHeader,
+    CCardBody,
+    CCardFooter,
   CModal,
   CModalHeader,
   CModalTitle,
   CModalBody,
   CModalFooter,
-} from "@coreui/react";
+  } from "@coreui/react";
 import { cilTrash, cilX, cilSearch, cilWarning } from "@coreui/icons";
-import CIcon from "@coreui/icons-react";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+  import CIcon from "@coreui/icons-react";
+  import React, { useState } from "react";
+  import { useNavigate } from "react-router-dom";
+  
 function DeleteTask() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [categories] = useState<{value: string, label: string}[]>([
     {value: "personal", label: "Personal"},
@@ -32,54 +32,54 @@ function DeleteTask() {
     {value: "other", label: "Other"},
   ]);
 
-  const [task, setTask] = useState({
-    name: "",
-    dueDate: "",
-    startDate: "",
-    finishDate: "",
-    status: "pending",
-    category: "",
-    notes: "",
-  });
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setTask((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleDeleteClick = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setShowConfirmModal(true);
-  };
-
-  const handleConfirmDelete = () => {
-    console.log("Delete Task:", task);
-    // TODO: Send to API
-    setTask({
+    const [task, setTask] = useState({
       name: "",
       dueDate: "",
       startDate: "",
       finishDate: "",
       status: "pending",
-      category: "",
+    category: "",
       notes: "",
     });
+  
+    const handleChange = (
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
+      const { name, value } = e.target;
+      setTask((prev) => ({ ...prev, [name]: value }));
+    };
+  
+  const handleDeleteClick = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    console.log("Delete Task:", task);
+      // TODO: Send to API
+      setTask({
+        name: "",
+        dueDate: "",
+        startDate: "",
+        finishDate: "",
+        status: "pending",
+      category: "",
+        notes: "",
+      });
     setShowConfirmModal(false);
     navigate("/taskdashboard");
   };
 
   const handleCancelDelete = () => {
     setShowConfirmModal(false);
-  };
-
-  const handleCancel = () => {
-    navigate("/taskdashboard");
-  };
-
-  return (
-    <div className="d-flex justify-content-center align-items-start w-100 h-100 pt-4">
+    };
+  
+    const handleCancel = () => {
+      navigate("/taskdashboard");
+    };
+  
+    return (
+      <div className="d-flex justify-content-center align-items-start w-100 h-100 pt-4">
       <CCard style={{ maxWidth: '600px', width: '100%' }}>
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <strong>Delete Task</strong>
@@ -91,11 +91,11 @@ function DeleteTask() {
               style={{ maxWidth: '200px' }}
             />
             <CButton type="button" color="primary" variant="outline">
-              <CIcon icon={cilSearch} />
+              <CIcon icon={cilSearch} /> 
             </CButton>
           </div>
         </CCardHeader>
-
+  
         <CForm onSubmit={handleDeleteClick}>
           <CCardBody>
             <CRow>
@@ -222,8 +222,9 @@ function DeleteTask() {
           </CButton>
         </CModalFooter>
       </CModal>
-    </div>
-  );
-}
-
+      </div>
+    );
+  }
+  
 export default DeleteTask;
+  
