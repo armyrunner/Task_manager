@@ -11,22 +11,20 @@ import {
   CCardHeader,
   CCardBody,
   CCardFooter,
-} from "@coreui/react";
-import {
   CModal,
   CModalHeader,
   CModalBody,
   CModalTitle,
   CModalFooter,
   CInputGroup,
+  CTooltip,
 } from "@coreui/react";
-import { cilSave, cilX,cilPlus } from "@coreui/icons";
+import { cilSave, cilX, cilSearch, cilPlus } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CTooltip } from "@coreui/react";
 
-function AddTask() {
+function UpdateTask() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [newCategory, setNewCategory] = useState("");
@@ -37,7 +35,6 @@ function AddTask() {
     {value: "other", label: "Other"},
   ]);
 
-  
   const [task, setTask] = useState({
     name: "",
     dueDate: "",
@@ -54,26 +51,24 @@ function AddTask() {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setNewCategory(""); // Clear the new category input
+    setNewCategory("");
   };
 
   const handleSaveCategory = () => {
-    if (newCategory.trim()=== "") return;
+    if (newCategory.trim() === "") return;
 
     const newCat = {
       value: newCategory.toLowerCase().replace(/\s+/g, '-'),
       label: newCategory,
     };
-  
-    setCategories([...categories, newCat]);  // Add to list
-    setTask({ ...task, category: newCat.value });  // Select it
+
+    setCategories([...categories, newCat]);
+    setTask({ ...task, category: newCat.value });
     handleCloseModal();
   };
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setTask((prev) => ({ ...prev, [name]: value }));
@@ -81,7 +76,7 @@ function AddTask() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("New Task:", task);
+    console.log("Updated Task:", task);
     // TODO: Send to API
     setTask({
       name: "",
@@ -92,8 +87,6 @@ function AddTask() {
       category: "",
       notes: "",
     });
-    // Optionally navigate back to dashboard
-    // navigate('/taskdashboard');
   };
 
   const handleCancel = () => {
@@ -102,9 +95,20 @@ function AddTask() {
 
   return (
     <div className="d-flex justify-content-center align-items-start w-100 h-100 pt-4">
-      <CCard style={{ maxWidth: "600px", width: "100%" }}>
-        <CCardHeader>
-          <strong>Add New Task</strong>
+      <CCard style={{ maxWidth: '600px', width: '100%' }}>
+        <CCardHeader className="d-flex justify-content-between align-items-center">
+          <strong>Update Task</strong>
+          <div className="d-flex gap-2">
+            <CFormInput
+              type="search"
+              placeholder="Search..."
+              aria-label="Search"
+              style={{ maxWidth: '200px' }}
+            />
+            <CButton type="button" color="primary" variant="outline">
+              <CIcon icon={cilSearch} />
+            </CButton>
+          </div>
         </CCardHeader>
 
         <CForm onSubmit={handleSubmit}>
@@ -144,23 +148,23 @@ function AddTask() {
               <CCol md={6} className="mb-3">
                 <CFormLabel htmlFor="category">Category</CFormLabel>
                 <CInputGroup>
-                <CFormSelect
-                  id="category"
-                  name="category"
-                  value={task.category}
-                  onChange={handleChange}
-                >
-                  {categories.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </CFormSelect>
-                <CTooltip content="Add New Category" placement="top">
-                  <CButton color="primary" variant="outline" onClick={handleOpenModal}>
-                    <CIcon icon={cilPlus} className="me-2" />
-                  </CButton>
-                </CTooltip>
+                  <CFormSelect
+                    id="category"
+                    name="category"
+                    value={task.category}
+                    onChange={handleChange}
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                  <CTooltip content="Add New Category" placement="top">
+                    <CButton color="primary" variant="outline" onClick={handleOpenModal}>
+                      <CIcon icon={cilPlus} />
+                    </CButton>
+                  </CTooltip>
                 </CInputGroup>
               </CCol>
               <CCol md={6} className="mb-3">
@@ -195,7 +199,7 @@ function AddTask() {
                   rows={4}
                   value={task.notes}
                   onChange={handleChange}
-                  style={{ resize: "none" }}
+                  style={{ resize: 'none' }}
                 />
               </CCol>
             </CRow>
@@ -239,4 +243,4 @@ function AddTask() {
   );
 }
 
-export default AddTask;
+export default UpdateTask;

@@ -1,13 +1,13 @@
 package models
 
 type Task struct {
-	ID          int
-	OriginalID  int
-	Description string
-	DueDate     string
-	StartDate   string
-	FinishDate  string
-	Status      string
-	Notes       string
-	Category    string
+	ID          int		`json:"id"`
+	OriginalID  int		`json:"originalid"`
+	Description string	`json:"description"`
+	DueDate     string	`json:"duedate"`
+	StartDate   string	`json:"startdate"`
+	FinishDate  string	`json:"finishdate"`
+	Status      string	`json:"status"`
+	Notes       string	`json:"notes"`
+	Category    string	`json:"category"`
 }

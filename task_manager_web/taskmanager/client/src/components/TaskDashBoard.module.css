@@ -7,8 +7,21 @@
   }
 
 
-  .mainContent {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-  }
+.mainContent {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #faf8f5;
+}
+
+  
+
+/*
+
+Light gray	#f5f5f5	Neutral, subtle
+Light blue-gray	#f0f4f8	Current (soft, modern)
+Warm beige	#faf8f5	Warmer tone
+Cool slate	#e2e8f0	Slightly darker
+Mint	#f0fdf4	Light green tint
+
+*/

@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	//"time"
@@ -16,10 +17,17 @@ func InsertData(tks *models.Task) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, strings.ToLower(tks.Category))
+	result, err := stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, strings.ToLower(tks.Category))
 	if err != nil {
 		return err
 	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	tks.ID = int(id)
 
 	return nil
 }
@@ -31,10 +39,16 @@ func UpdateData(tks *models.Task) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, strings.ToLower(tks.Category), tks.ID)
+	result, err := stmt.Exec(tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, strings.ToLower(tks.Category), tks.ID)
 	if err != nil {
 		return err
 	}
+
+	rowsAffected, _:= result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("no tasks found with ID %d", tks.ID)
+	}
+
 
 	return nil
 }

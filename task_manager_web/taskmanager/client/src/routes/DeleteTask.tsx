@@ -11,33 +11,27 @@ import {
   CCardHeader,
   CCardBody,
   CCardFooter,
-} from "@coreui/react";
-import {
   CModal,
   CModalHeader,
-  CModalBody,
   CModalTitle,
+  CModalBody,
   CModalFooter,
-  CInputGroup,
 } from "@coreui/react";
-import { cilSave, cilX,cilPlus } from "@coreui/icons";
+import { cilTrash, cilX, cilSearch, cilWarning } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CTooltip } from "@coreui/react";
 
-function AddTask() {
+function DeleteTask() {
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
-  const [newCategory, setNewCategory] = useState("");
-  const [categories, setCategories] = useState<{value: string, label: string}[]>([
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [categories] = useState<{value: string, label: string}[]>([
     {value: "personal", label: "Personal"},
     {value: "work", label: "Work"},
     {value: "family", label: "Family"},
     {value: "other", label: "Other"},
   ]);
 
-  
   const [task, setTask] = useState({
     name: "",
     dueDate: "",
@@ -48,40 +42,20 @@ function AddTask() {
     notes: "",
   });
 
-  const handleOpenModal = () => {
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setNewCategory(""); // Clear the new category input
-  };
-
-  const handleSaveCategory = () => {
-    if (newCategory.trim()=== "") return;
-
-    const newCat = {
-      value: newCategory.toLowerCase().replace(/\s+/g, '-'),
-      label: newCategory,
-    };
-  
-    setCategories([...categories, newCat]);  // Add to list
-    setTask({ ...task, category: newCat.value });  // Select it
-    handleCloseModal();
-  };
-
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setTask((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleDeleteClick = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("New Task:", task);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    console.log("Delete Task:", task);
     // TODO: Send to API
     setTask({
       name: "",
@@ -92,8 +66,12 @@ function AddTask() {
       category: "",
       notes: "",
     });
-    // Optionally navigate back to dashboard
-    // navigate('/taskdashboard');
+    setShowConfirmModal(false);
+    navigate("/taskdashboard");
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirmModal(false);
   };
 
   const handleCancel = () => {
@@ -102,12 +80,23 @@ function AddTask() {
 
   return (
     <div className="d-flex justify-content-center align-items-start w-100 h-100 pt-4">
-      <CCard style={{ maxWidth: "600px", width: "100%" }}>
-        <CCardHeader>
-          <strong>Add New Task</strong>
+      <CCard style={{ maxWidth: '600px', width: '100%' }}>
+        <CCardHeader className="d-flex justify-content-between align-items-center">
+          <strong>Delete Task</strong>
+          <div className="d-flex gap-2">
+            <CFormInput
+              type="search"
+              placeholder="Search..."
+              aria-label="Search"
+              style={{ maxWidth: '200px' }}
+            />
+            <CButton type="button" color="primary" variant="outline">
+              <CIcon icon={cilSearch} />
+            </CButton>
+          </div>
         </CCardHeader>
 
-        <CForm onSubmit={handleSubmit}>
+        <CForm onSubmit={handleDeleteClick}>
           <CCardBody>
             <CRow>
               <CCol md={12} className="mb-3">
@@ -118,7 +107,7 @@ function AddTask() {
                   name="name"
                   value={task.name}
                   onChange={handleChange}
-                  required
+                  disabled
                 />
               </CCol>
               <CCol md={6} className="mb-3">
@@ -129,6 +118,7 @@ function AddTask() {
                   name="startDate"
                   value={task.startDate}
                   onChange={handleChange}
+                  disabled
                 />
               </CCol>
               <CCol md={6} className="mb-3">
@@ -139,16 +129,17 @@ function AddTask() {
                   name="finishDate"
                   value={task.finishDate}
                   onChange={handleChange}
+                  disabled
                 />
               </CCol>
               <CCol md={6} className="mb-3">
                 <CFormLabel htmlFor="category">Category</CFormLabel>
-                <CInputGroup>
                 <CFormSelect
                   id="category"
                   name="category"
                   value={task.category}
                   onChange={handleChange}
+                  disabled
                 >
                   {categories.map((cat) => (
                     <option key={cat.value} value={cat.value}>
@@ -156,12 +147,6 @@ function AddTask() {
                     </option>
                   ))}
                 </CFormSelect>
-                <CTooltip content="Add New Category" placement="top">
-                  <CButton color="primary" variant="outline" onClick={handleOpenModal}>
-                    <CIcon icon={cilPlus} className="me-2" />
-                  </CButton>
-                </CTooltip>
-                </CInputGroup>
               </CCol>
               <CCol md={6} className="mb-3">
                 <CFormLabel htmlFor="dueDate">Due Date</CFormLabel>
@@ -171,6 +156,7 @@ function AddTask() {
                   name="dueDate"
                   value={task.dueDate}
                   onChange={handleChange}
+                  disabled
                 />
               </CCol>
               <CCol md={6} className="mb-3">
@@ -180,6 +166,7 @@ function AddTask() {
                   name="status"
                   value={task.status}
                   onChange={handleChange}
+                  disabled
                 >
                   <option value="pending">Pending</option>
                   <option value="in-progress">In-Progress</option>
@@ -195,43 +182,43 @@ function AddTask() {
                   rows={4}
                   value={task.notes}
                   onChange={handleChange}
-                  style={{ resize: "none" }}
+                  style={{ resize: 'none' }}
+                  disabled
                 />
               </CCol>
             </CRow>
           </CCardBody>
           <CCardFooter className="d-flex justify-content-end gap-2">
-            <CButton color="danger" variant="outline" onClick={handleCancel}>
+            <CButton color="secondary" variant="outline" onClick={handleCancel}>
               <CIcon icon={cilX} className="me-2" />
               Cancel
             </CButton>
-            <CButton color="primary" type="submit">
-              <CIcon icon={cilSave} className="me-2" />
-              Save Task
+            <CButton color="danger" type="submit">
+              <CIcon icon={cilTrash} className="me-2" />
+              Delete Task
             </CButton>
           </CCardFooter>
         </CForm>
       </CCard>
-      <CModal visible={showModal} onClose={handleCloseModal}>
+
+      {/* Confirmation Modal */}
+      <CModal visible={showConfirmModal} onClose={handleCancelDelete}>
         <CModalHeader>
-          <CModalTitle>Add New Category</CModalTitle>
+          <CModalTitle>Confirm Delete</CModalTitle>
         </CModalHeader>
-        <CModalBody>
-          <CFormInput
-            type="text"
-            id="newCategory"
-            name="newCategory"
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-            placeholder="Enter new category"
-          />
+        <CModalBody className="text-center">
+          <CIcon icon={cilWarning} size="3xl" className="text-danger mb-3" />
+          <p className="mb-0">Are you sure you want to delete this task?</p>
+          <p className="text-muted"><strong>{task.name || "This task"}</strong></p>
+          <p className="text-danger small">This action cannot be undone.</p>
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" variant="outline" onClick={handleCloseModal}>
+          <CButton color="secondary" variant="outline" onClick={handleCancelDelete}>
             Cancel
           </CButton>
-          <CButton color="primary" onClick={handleSaveCategory}>
-            Save
+          <CButton color="danger" onClick={handleConfirmDelete}>
+            <CIcon icon={cilTrash} className="me-2" />
+            Yes, Delete
           </CButton>
         </CModalFooter>
       </CModal>
@@ -239,4 +226,4 @@ function AddTask() {
   );
 }
 
-export default AddTask;
+export default DeleteTask;

@@ -20,6 +20,7 @@ import {
   cilCheckCircle,
   cilSitemap,
   cilSearch,
+  cilHome,
 } from "@coreui/icons";
 import "@coreui/coreui/dist/css/coreui.min.css";
 import styles from "./TaskDashboard.module.css";
@@ -48,25 +49,38 @@ const Dashboard = () => {
               aria-label="Search"
             />
             <CButton type="button" color="primary" variant="outline">
-              <CIcon icon={cilSearch} /> 
+              <CIcon icon={cilSearch} />
             </CButton>
           </CInputGroup>
         </CSidebarHeader>
         <CSidebarNav>
+          <CNavItem>
+            <Link to="/taskdashboard" className="nav-link">
+              <CIcon customClassName="nav-icon text-primary" icon={cilHome} />{" "}
+              Dashboard
+            </Link>
+          </CNavItem>
           <CNavItem href="#">
             <CIcon customClassName="nav-icon text-primary" icon={cilSitemap} />
             Add Category
           </CNavItem>
           <CNavItem>
-            <Link to="addtask" className="nav-link"><CIcon customClassName="nav-icon text-primary" icon={cilPlus} /> Add Task</Link>
+            <Link to="addtask" className="nav-link">
+              <CIcon customClassName="nav-icon text-primary" icon={cilPlus} />{" "}
+              Add Task
+            </Link>
           </CNavItem>
-          <CNavItem href="#">
-            <CIcon customClassName="nav-icon text-info" icon={cilPenAlt} />
-            Update Task
+          <CNavItem>
+            <Link to="updatetask" className="nav-link">
+              <CIcon customClassName="nav-icon text-info" icon={cilPenAlt} />{" "}
+              Update Task
+            </Link>
           </CNavItem>
-          <CNavItem href="#">
-            <CIcon customClassName="nav-icon text-danger" icon={cilTrash} />
-            Delete Task
+          <CNavItem>
+            <Link to="deletetask" className="nav-link">
+              <CIcon customClassName="nav-icon text-danger" icon={cilTrash} />{" "}
+              Delete Task
+            </Link>
           </CNavItem>
           <CNavItem href="#">
             <CIcon customClassName="nav-icon text-info" icon={cilPuzzle} />

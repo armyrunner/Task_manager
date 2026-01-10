@@ -21,7 +21,7 @@ function NavBar({ title}: Props) {
 
   return (
     <nav
-      className="navbar navbar-expand-lg fixed-top shadow-sm"
+      className="navbar fixed-top navbar-expand-lg shadow-sm bg-light"
       data-bs-theme="light"
     >
       <div className="container-fluid">

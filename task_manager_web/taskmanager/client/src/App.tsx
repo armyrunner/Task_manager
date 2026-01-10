@@ -11,6 +11,9 @@ import AboutPage from './routes/AboutPage'
 import ContactPage from './routes/ContactPage'
 import OverviewPage  from './routes/OverviewPage'
 import AddTask from './routes/AddTask'
+import UpdateTask from './routes/UpdateTask'
+import DeleteTask from './routes/DeleteTask'
+import CardLayout from './components/CardLayout'
 
 //import PageNotFound from './components/PageNotFound'
 
@@ -33,6 +36,9 @@ function App() {
         <Route path='/register' element={<Register/>}/>
         <Route path='/taskdashboard' element={<TaskDashboard/>}>
           <Route path='addtask' element={<AddTask/>}/>
+          <Route path='updatetask' element={<UpdateTask/>}/>
+          <Route path='deletetask' element={<DeleteTask/>}/>
+          <Route index element={<CardLayout/>}/>
         </Route>
         <Route path='/about' element={<AboutPage/>}/>
         <Route path='/contact' element={<ContactPage/>}/>

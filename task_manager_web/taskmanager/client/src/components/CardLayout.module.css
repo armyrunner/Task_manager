@@ -1,0 +1,15 @@
+.cardMainContent{
+    width: 15rem;
+    height: 20rem;
+    background-color: #f5f5f5;
+    cursor: pointer;
+  }
+
+.cardBody {
+    padding: 0rem;
+  }
+
+  .cardBodyText {
+    margin: 0;
+    padding: 0;
+  }
