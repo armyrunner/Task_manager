@@ -87,6 +87,7 @@ function SignIn() {
                 className="form-control form-control-lg bg-light fs-6"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
               ></input>
             </div>
             <div className="input-group mb-3 justify-content-center">
@@ -96,6 +97,7 @@ function SignIn() {
                 className="form-control form-control-lg bg-light fs-6"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
               ></input>
             </div>
             <div
@@ -117,6 +119,7 @@ function SignIn() {
               type="submit"
               className="btn border-white text-white w-50 fs-6"
               style={{ marginRight: '10px' }}
+              disabled={loading}
             >
               Log In
             </Button>
@@ -125,6 +128,7 @@ function SignIn() {
               type="button"
               className="btn border-white text-white w-50 fs-6"
               onClick={handleRegisterClick}
+              disabled={loading}
             >
               Register
             </Button>
