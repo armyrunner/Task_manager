@@ -42,7 +42,7 @@ var listCompletedTasksCmd = &cobra.Command{
 			for _, task := range tasks {
 				fmt.Fprintf(w, "%d\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 					task.ID, task.OriginalID, task.Description, task.DueDate, task.StartDate,
-					task.FinishDate, task.Status, task.Notes, task.Category)
+					task.FinishDate, task.Status, task.Notes, task.CategoryName)
 			}
 			w.Flush()
 		}

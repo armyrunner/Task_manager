@@ -21,36 +21,60 @@ import {
   CInputGroup,
   CSpinner,
 } from "@coreui/react";
-import { cilSave, cilX,cilPlus, cilList } from "@coreui/icons";
+import { cilSave, cilX, cilPlus, cilList } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CTooltip } from "@coreui/react";
+
+interface Category {
+  id: number;
+  user_id: number;
+  name: string;
+}
 
 function AddTask() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
-  const [loading,setLoading] = useState<boolean>(false);
-  const [error,setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState("");
-  const [categories, setCategories] = useState<{value: string, label: string}[]>([
-    {value: "personal", label: "Personal"},
-    {value: "work", label: "Work"},
-    {value: "family", label: "Family"},
-    {value: "other", label: "Other"},
-  ]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
 
-  
   const [task, setTask] = useState({
     description: "",
     due_date: "",
     start_date: "",
     finish_date: "",
     status: "pending",
-    category: "",
+    category_id: 0,
     notes: "",
   });
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/categories", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data || []);
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  };
 
   const handleOpenModal = () => {
     setShowModal(true);
@@ -58,20 +82,38 @@ function AddTask() {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setNewCategory(""); // Clear the new category input
+    setNewCategory("");
   };
 
-  const handleSaveCategory = () => {
-    if (newCategory.trim()=== "") return;
+  const handleSaveCategory = async () => {
+    if (newCategory.trim() === "") return;
 
-    const newCat = {
-      value: newCategory.toLowerCase().replace(/\s+/g, '-'),
-      label: newCategory,
-    };
-  
-    setCategories([...categories, newCat]);  // Add to list
-    setTask({ ...task, category: newCat.value });  // Select it
-    handleCloseModal();
+    setCategoryLoading(true);
+    try {
+      const response = await fetch("http://localhost:8080/api/categories", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        body: JSON.stringify({ name: newCategory }),
+      });
+
+      if (response.ok) {
+        const newCat = await response.json();
+        setCategories([...categories, newCat]);
+        setTask({ ...task, category_id: newCat.id });
+        handleCloseModal();
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || "Failed to create category");
+      }
+    } catch (err) {
+      console.error("Error creating category:", err);
+      setError("Failed to create category");
+    } finally {
+      setCategoryLoading(false);
+    }
   };
 
   const handleChange = (
@@ -80,7 +122,12 @@ function AddTask() {
     >
   ) => {
     const { name, value } = e.target;
-    setTask((prev) => ({ ...prev, [name]: value }));
+    // Convert category_id to number
+    if (name === "category_id") {
+      setTask((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
+    } else {
+      setTask((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -90,23 +137,25 @@ function AddTask() {
     setLoading(true);
     setError(null);
 
-    if(!task.description){
-      setError('Task description is required');
+    if (!task.description) {
+      setError("Task description is required");
       setLoading(false);
       return;
     }
-    
-    // TODO: Send to API
-    try{
-      const response = await fetch('http://localhost:8080/api/tasks',{
-        method: 'POST',
-        headers: {'Content-Type': 'application/json','Authorization': `Bearer ${localStorage.getItem('access_token')}`},
+
+    try {
+      const response = await fetch("http://localhost:8080/api/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
         body: JSON.stringify(task),
-        credentials: 'include'
+        credentials: "include",
       });
       const data = await response.json();
-      if(!response.ok){
-        throw new Error(data.message || data.Error || 'Failed to add task');
+      if (!response.ok) {
+        throw new Error(data.message || data.Error || "Failed to add task");
       }
       setTask({
         description: "",
@@ -114,13 +163,13 @@ function AddTask() {
         start_date: "",
         finish_date: "",
         status: "pending",
-        category: "",
+        category_id: 0,
         notes: "",
       });
       setShowSuccessModal(true);
     } catch (error) {
-      console.error('Error adding task:', error);
-      setError('Failed to add task. Please try again.');
+      console.error("Error adding task:", error);
+      setError("Failed to add task. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -132,7 +181,7 @@ function AddTask() {
 
   const handleGoToDashboard = () => {
     setShowSuccessModal(false);
-    navigate("/taskdashboard",{replace: true});
+    navigate("/taskdashboard", { replace: true });
   };
 
   const handleAddAnotherTask = () => {
@@ -143,8 +192,8 @@ function AddTask() {
       start_date: "",
       finish_date: "",
       status: "pending",
-      category: "",
-      notes: "",  
+      category_id: 0,
+      notes: "",
     });
     setLoading(false);
     setError(null);
@@ -194,25 +243,30 @@ function AddTask() {
                 />
               </CCol>
               <CCol md={6} className="mb-3">
-                <CFormLabel htmlFor="category">Category</CFormLabel>
+                <CFormLabel htmlFor="category_id">Category</CFormLabel>
                 <CInputGroup>
-                <CFormSelect
-                  id="category"
-                  name="category"
-                  value={task.category}
-                  onChange={handleChange}
-                >
-                  {categories.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </CFormSelect>
-                <CTooltip content="Add New Category" placement="top">
-                  <CButton color="primary" variant="outline" onClick={handleOpenModal}>
-                    <CIcon icon={cilPlus} className="me-2" />
-                  </CButton>
-                </CTooltip>
+                  <CFormSelect
+                    id="category_id"
+                    name="category_id"
+                    value={task.category_id}
+                    onChange={handleChange}
+                  >
+                    <option value={0}>Select Category</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                  <CTooltip content="Add New Category" placement="top">
+                    <CButton
+                      color="primary"
+                      variant="outline"
+                      onClick={handleOpenModal}
+                    >
+                      <CIcon icon={cilPlus} className="me-2" />
+                    </CButton>
+                  </CTooltip>
                 </CInputGroup>
               </CCol>
               <CCol md={6} className="mb-3">
@@ -279,12 +333,19 @@ function AddTask() {
           />
         </CModalBody>
         <CModalFooter>
-
-          <CButton color="secondary" variant="outline" onClick={handleCloseModal}>
+          <CButton
+            color="secondary"
+            variant="outline"
+            onClick={handleCloseModal}
+          >
             Cancel
           </CButton>
-          <CButton color="primary" onClick={handleSaveCategory}>
-            Save
+          <CButton
+            color="primary"
+            onClick={handleSaveCategory}
+            disabled={categoryLoading}
+          >
+            {categoryLoading ? <CSpinner size="sm" /> : "Save"}
           </CButton>
         </CModalFooter>
       </CModal>

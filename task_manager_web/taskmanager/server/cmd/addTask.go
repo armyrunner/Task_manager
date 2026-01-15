@@ -24,7 +24,7 @@ var addTaskCmd = &cobra.Command{
 			FinishDate:  finish_date,
 			Status:      "Pending",
 			Notes:       notes,
-			Category:    category,
+			// CategoryID is set via API, not CLI for now
 		})
 		if err != nil {
 			fmt.Println("Failed to add task:", err)

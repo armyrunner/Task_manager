@@ -1,16 +1,16 @@
 import {
-    CForm,
-    CFormInput,
-    CButton,
-    CFormLabel,
-    CFormSelect,
-    CFormTextarea,
-    CCol,
-    CRow,
-    CCard,
-    CCardHeader,
-    CCardBody,
-    CCardFooter,
+  CForm,
+  CFormInput,
+  CButton,
+  CFormLabel,
+  CFormSelect,
+  CFormTextarea,
+  CCol,
+  CRow,
+  CCard,
+  CCardHeader,
+  CCardBody,
+  CCardFooter,
   CModal,
   CModalHeader,
   CModalBody,
@@ -18,32 +18,61 @@ import {
   CModalFooter,
   CInputGroup,
   CTooltip,
-  } from "@coreui/react";
+  CSpinner,
+} from "@coreui/react";
 import { cilSave, cilX, cilSearch, cilPlus } from "@coreui/icons";
-  import CIcon from "@coreui/icons-react";
-  import React, { useState } from "react";
-  import { useNavigate } from "react-router-dom";
-  
+import CIcon from "@coreui/icons-react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+interface Category {
+  id: number;
+  user_id: number;
+  name: string;
+}
+
 function UpdateTask() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [newCategory, setNewCategory] = useState("");
-  const [categories, setCategories] = useState<{value: string, label: string}[]>([
-    {value: "personal", label: "Personal"},
-    {value: "work", label: "Work"},
-    {value: "family", label: "Family"},
-    {value: "other", label: "Other"},
-  ]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
 
-    const [task, setTask] = useState({
-      name: "",
-      dueDate: "",
-      startDate: "",
-      finishDate: "",
-      status: "pending",
-    category: "",
-      notes: "",
-    });
+  const [task, setTask] = useState({
+    id: 0,
+    description: "",
+    due_date: "",
+    start_date: "",
+    finish_date: "",
+    status: "pending",
+    category_id: 0,
+    notes: "",
+  });
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/categories", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data || []);
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  };
 
   const handleOpenModal = () => {
     setShowModal(true);
@@ -54,126 +83,178 @@ function UpdateTask() {
     setNewCategory("");
   };
 
-  const handleSaveCategory = () => {
+  const handleSaveCategory = async () => {
     if (newCategory.trim() === "") return;
 
-    const newCat = {
-      value: newCategory.toLowerCase().replace(/\s+/g, '-'),
-      label: newCategory,
-    };
-
-    setCategories([...categories, newCat]);
-    setTask({ ...task, category: newCat.value });
-    handleCloseModal();
-  };
-  
-    const handleChange = (
-      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-    ) => {
-      const { name, value } = e.target;
-      setTask((prev) => ({ ...prev, [name]: value }));
-    };
-  
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-    console.log("Updated Task:", task);
-      // TODO: Send to API
-      setTask({
-        name: "",
-        dueDate: "",
-        startDate: "",
-        finishDate: "",
-        status: "pending",
-      category: "",
-        notes: "",
+    setCategoryLoading(true);
+    try {
+      const response = await fetch("http://localhost:8080/api/categories", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        body: JSON.stringify({ name: newCategory }),
       });
-    };
-  
-    const handleCancel = () => {
-      navigate("/taskdashboard");
-    };
-  
-    return (
-      <div className="d-flex justify-content-center align-items-start w-100 h-100 pt-4">
-      <CCard style={{ maxWidth: '600px', width: '100%' }}>
+
+      if (response.ok) {
+        const newCat = await response.json();
+        setCategories([...categories, newCat]);
+        setTask({ ...task, category_id: newCat.id });
+        handleCloseModal();
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || "Failed to create category");
+      }
+    } catch (err) {
+      console.error("Error creating category:", err);
+      setError("Failed to create category");
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    // Convert category_id to number
+    if (name === "category_id") {
+      setTask((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
+    } else {
+      setTask((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("Updated Task:", task);
+
+    if (task.id === 0) {
+      setError("Please search for a task first");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("http://localhost:8080/api/tasks", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        body: JSON.stringify(task),
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || data.Error || "Failed to update task");
+      }
+      navigate("/taskdashboard", { replace: true });
+    } catch (error) {
+      console.error("Error updating task:", error);
+      setError("Failed to update task. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate("/taskdashboard");
+  };
+
+  return (
+    <div className="d-flex justify-content-center align-items-start w-100 h-100 pt-4">
+      <CCard style={{ maxWidth: "600px", width: "100%" }}>
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <strong>Update Task</strong>
           <div className="d-flex gap-2">
             <CFormInput
               type="search"
-              placeholder="Search..."
+              placeholder="Search by ID..."
               aria-label="Search"
-              style={{ maxWidth: '200px' }}
+              style={{ maxWidth: "200px" }}
             />
             <CButton type="button" color="primary" variant="outline">
-              <CIcon icon={cilSearch} /> 
+              <CIcon icon={cilSearch} />
             </CButton>
           </div>
         </CCardHeader>
-  
+
         <CForm onSubmit={handleSubmit}>
+          {loading && <CSpinner color="success" />}
+          {error && <div className="alert alert-danger">{error}</div>}
           <CCardBody>
             <CRow>
               <CCol md={12} className="mb-3">
-                <CFormLabel htmlFor="name">Task Name</CFormLabel>
+                <CFormLabel htmlFor="description">Task Name</CFormLabel>
                 <CFormInput
                   type="text"
-                  id="name"
-                  name="name"
-                  value={task.name}
+                  id="description"
+                  name="description"
+                  value={task.description}
                   onChange={handleChange}
                   required
                 />
               </CCol>
               <CCol md={6} className="mb-3">
-                <CFormLabel htmlFor="startDate">Start Date</CFormLabel>
+                <CFormLabel htmlFor="start_date">Start Date</CFormLabel>
                 <CFormInput
                   type="date"
-                  id="startDate"
-                  name="startDate"
-                  value={task.startDate}
+                  id="start_date"
+                  name="start_date"
+                  value={task.start_date}
                   onChange={handleChange}
                 />
               </CCol>
               <CCol md={6} className="mb-3">
-                <CFormLabel htmlFor="finishDate">Finish Date</CFormLabel>
+                <CFormLabel htmlFor="finish_date">Finish Date</CFormLabel>
                 <CFormInput
                   type="date"
-                  id="finishDate"
-                  name="finishDate"
-                  value={task.finishDate}
+                  id="finish_date"
+                  name="finish_date"
+                  value={task.finish_date}
                   onChange={handleChange}
                 />
               </CCol>
               <CCol md={6} className="mb-3">
-                <CFormLabel htmlFor="category">Category</CFormLabel>
+                <CFormLabel htmlFor="category_id">Category</CFormLabel>
                 <CInputGroup>
                   <CFormSelect
-                    id="category"
-                    name="category"
-                    value={task.category}
+                    id="category_id"
+                    name="category_id"
+                    value={task.category_id}
                     onChange={handleChange}
                   >
+                    <option value={0}>Select Category</option>
                     {categories.map((cat) => (
-                      <option key={cat.value} value={cat.value}>
-                        {cat.label}
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
                       </option>
                     ))}
                   </CFormSelect>
                   <CTooltip content="Add New Category" placement="top">
-                    <CButton color="primary" variant="outline" onClick={handleOpenModal}>
+                    <CButton
+                      color="primary"
+                      variant="outline"
+                      onClick={handleOpenModal}
+                    >
                       <CIcon icon={cilPlus} />
                     </CButton>
                   </CTooltip>
                 </CInputGroup>
               </CCol>
               <CCol md={6} className="mb-3">
-                <CFormLabel htmlFor="dueDate">Due Date</CFormLabel>
+                <CFormLabel htmlFor="due_date">Due Date</CFormLabel>
                 <CFormInput
                   type="date"
-                  id="dueDate"
-                  name="dueDate"
-                  value={task.dueDate}
+                  id="due_date"
+                  name="due_date"
+                  value={task.due_date}
                   onChange={handleChange}
                 />
               </CCol>
@@ -199,7 +280,7 @@ function UpdateTask() {
                   rows={4}
                   value={task.notes}
                   onChange={handleChange}
-                  style={{ resize: 'none' }}
+                  style={{ resize: "none" }}
                 />
               </CCol>
             </CRow>
@@ -209,7 +290,7 @@ function UpdateTask() {
               <CIcon icon={cilX} className="me-2" />
               Cancel
             </CButton>
-            <CButton color="primary" type="submit">
+            <CButton color="primary" type="submit" disabled={loading}>
               <CIcon icon={cilSave} className="me-2" />
               Save Task
             </CButton>
@@ -231,17 +312,24 @@ function UpdateTask() {
           />
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" variant="outline" onClick={handleCloseModal}>
+          <CButton
+            color="secondary"
+            variant="outline"
+            onClick={handleCloseModal}
+          >
             Cancel
           </CButton>
-          <CButton color="primary" onClick={handleSaveCategory}>
-            Save
+          <CButton
+            color="primary"
+            onClick={handleSaveCategory}
+            disabled={categoryLoading}
+          >
+            {categoryLoading ? <CSpinner size="sm" /> : "Save"}
           </CButton>
         </CModalFooter>
       </CModal>
-      </div>
-    );
-  }
-  
+    </div>
+  );
+}
+
 export default UpdateTask;
-  

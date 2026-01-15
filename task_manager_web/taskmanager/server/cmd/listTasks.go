@@ -45,7 +45,7 @@ var listTasksCmd = &cobra.Command{
 			for _, task := range tasks {
 				fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 					task.ID, task.Description, task.DueDate, task.StartDate,
-					task.FinishDate, task.Status, task.Notes, task.Category)
+					task.FinishDate, task.Status, task.Notes, task.CategoryName)
 			}
 			w.Flush()
 		}
@@ -61,7 +61,7 @@ func printVerboseTask(task models.Task, i int) {
 	fmt.Printf("  Finish Date: %s\n", task.FinishDate)
 	fmt.Printf("  Status: %s\n", task.Status)
 	fmt.Printf("  Notes: %s\n", task.Notes)
-	fmt.Printf("  Category: %s\n", task.Category)		
+	fmt.Printf("  Category: %s\n", task.CategoryName)		
 	fmt.Println("---")
 }
 

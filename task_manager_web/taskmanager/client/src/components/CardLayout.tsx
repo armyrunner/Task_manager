@@ -25,7 +25,8 @@ interface Task {
   finish_date: string;
   status: string;
   notes: string;
-  category: string;
+  category_id: number;
+  category_name: string;
 }
 
 function CardLayout() {
@@ -94,7 +95,7 @@ function CardLayout() {
                 <strong>Due Date:</strong>{task.due_date}
                 <strong>Start Date:</strong>{task.start_date}
                 <strong>Status:</strong>{task.status}
-                <strong>Category:</strong>{task.category}
+                <strong>Category:</strong>{task.category_name}
                 </CCardText>
              
             </CCardBody>
@@ -125,7 +126,7 @@ function CardLayout() {
             <strong>Notes:</strong> {selectedCard?.notes}
           </p>
           <p>
-            <strong>Category:</strong> {selectedCard?.category}
+            <strong>Category:</strong> {selectedCard?.category_name}
           </p>
         </CModalBody>
         <CModalFooter>

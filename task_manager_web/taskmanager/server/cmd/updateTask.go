@@ -42,12 +42,12 @@ var updateTaskCmd = &cobra.Command{
 		finalFinish := mergeString(finish_date, tasks[0].FinishDate)
 		finalStatus := mergeString(status, tasks[0].Status)
 		finalNotes := mergeString(notes, tasks[0].Notes)
-		finalCategory := mergeString(category, tasks[0].Category)
+		finalCategoryID := tasks[0].CategoryID // Preserve existing category ID
 
 		// Check if the task is being marked as complete
 		if finalStatus == "complete" || finalStatus == "Complete" || finalStatus == "completed" || finalStatus == "Completed" {
 			// Move the task to completed_tasks table
-			err = db.MoveCompletedTask(&models.Task{ID: taskID, Description: finalDesc, DueDate: finalDue, StartDate: finalStart, FinishDate: finalFinish, Status: finalStatus, Notes: finalNotes, Category: finalCategory})
+			err = db.MoveCompletedTask(&models.Task{ID: taskID, CategoryID: finalCategoryID, Description: finalDesc, DueDate: finalDue, StartDate: finalStart, FinishDate: finalFinish, Status: finalStatus, Notes: finalNotes})
 			if err != nil {
 				fmt.Println("Failed to move completed task:", err)
 				return
@@ -58,13 +58,13 @@ var updateTaskCmd = &cobra.Command{
 
 		err = db.UpdateData(&models.Task{
 			ID:          taskID,
+			CategoryID:  finalCategoryID,
 			Description: finalDesc,
 			DueDate:     finalDue,
 			StartDate:   finalStart,
 			FinishDate:  finalFinish,
 			Status:      finalStatus,
 			Notes:       finalNotes,
-			Category:    finalCategory,
 		})
 		if err != nil {
 			fmt.Println("Failed to update task:", err)

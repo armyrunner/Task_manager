@@ -109,15 +109,6 @@ func addColumnIfNotExists(tableName, columnName, columnType string) error {
 
 // runMigrations adds any new columns that don't exist yet
 func runMigrations() error {
-	// Add category column to initial_tasks if it doesn't exist
-	if err := addColumnIfNotExists("initial_tasks", "category", "TEXT"); err != nil {
-		return err
-	}
-	// Add category column to completed_tasks if it doesn't exist
-	if err := addColumnIfNotExists("completed_tasks", "category", "TEXT"); err != nil {
-		return err
-	}
-
 	// Add user_id column to initial_tasks if it doesn't exist
 	if err := addColumnIfNotExists("initial_tasks", "user_id", "INTEGER"); err != nil {
 		return err
@@ -127,13 +118,107 @@ func runMigrations() error {
 		return err
 	}
 
-	// Fix any existing NULL values (from before DEFAULT was added)
-	DB.Exec("UPDATE initial_tasks SET category = '' WHERE category IS NULL")
-	DB.Exec("UPDATE completed_tasks SET category = '' WHERE category IS NULL")
+	// Add category_id column to initial_tasks if it doesn't exist
+	if err := addColumnIfNotExists("initial_tasks", "category_id", "INTEGER"); err != nil {
+		return err
+	}
+	// Add category_id column to completed_tasks if it doesn't exist
+	if err := addColumnIfNotExists("completed_tasks", "category_id", "INTEGER"); err != nil {
+		return err
+	}
 
-	// Normalize all categories to lowercase
-	DB.Exec("UPDATE initial_tasks SET category = LOWER(category)")
-	DB.Exec("UPDATE completed_tasks SET category = LOWER(category)")
+	// Migrate old category TEXT data to new categories table
+	if err := migrateCategoryData(); err != nil {
+		return err
+	}
 
+	return nil
+}
+
+// migrateCategoryData migrates old category TEXT column data to the new categories table
+func migrateCategoryData() error {
+	// Check if the old 'category' column exists in initial_tasks
+	hasOldColumn, err := columnExists("initial_tasks", "category")
+	if err != nil {
+		return err
+	}
+
+	if !hasOldColumn {
+		// No old category column, nothing to migrate
+		return nil
+	}
+
+	// Check if migration already done (categories table has data)
+	var count int
+	err = DB.QueryRow("SELECT COUNT(*) FROM categories").Scan(&count)
+	if err != nil {
+		return err
+	}
+
+	// If categories already exist, skip migration
+	if count > 0 {
+		return nil
+	}
+
+	fmt.Println("Migrating category data to new categories table...")
+
+	// Get unique categories from initial_tasks (excluding empty strings)
+	rows, err := DB.Query(`
+		SELECT DISTINCT LOWER(TRIM(category)) as cat 
+		FROM initial_tasks 
+		WHERE category IS NOT NULL AND TRIM(category) != ''
+		UNION
+		SELECT DISTINCT LOWER(TRIM(category)) as cat 
+		FROM completed_tasks 
+		WHERE category IS NOT NULL AND TRIM(category) != ''
+	`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	// Insert each unique category into categories table with user_id = 1 (default user)
+	// In production, you'd want to associate with actual users
+	defaultUserID := 1
+
+	for rows.Next() {
+		var categoryName string
+		if err := rows.Scan(&categoryName); err != nil {
+			return err
+		}
+
+		// Insert into categories table
+		result, err := DB.Exec("INSERT INTO categories (user_id, name) VALUES (?, ?)", defaultUserID, categoryName)
+		if err != nil {
+			fmt.Printf("Warning: Could not insert category '%s': %v\n", categoryName, err)
+			continue
+		}
+
+		categoryID, _ := result.LastInsertId()
+
+		// Update initial_tasks to use the new category_id
+		_, err = DB.Exec(`
+			UPDATE initial_tasks 
+			SET category_id = ? 
+			WHERE LOWER(TRIM(category)) = ?
+		`, categoryID, categoryName)
+		if err != nil {
+			fmt.Printf("Warning: Could not update initial_tasks for category '%s': %v\n", categoryName, err)
+		}
+
+		// Update completed_tasks to use the new category_id
+		_, err = DB.Exec(`
+			UPDATE completed_tasks 
+			SET category_id = ? 
+			WHERE LOWER(TRIM(category)) = ?
+		`, categoryID, categoryName)
+		if err != nil {
+			fmt.Printf("Warning: Could not update completed_tasks for category '%s': %v\n", categoryName, err)
+		}
+
+		fmt.Printf("  Migrated category: %s (ID: %d)\n", categoryName, categoryID)
+	}
+
+	fmt.Println("Category migration complete!")
 	return nil
 }
