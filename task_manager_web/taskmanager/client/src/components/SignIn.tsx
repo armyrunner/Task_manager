@@ -53,7 +53,8 @@ function SignIn() {
       if(data.access_token){
         localStorage.setItem('access_token',data.access_token)
         localStorage.setItem('refresh_token',data.refresh_token)
-        login(data.user);
+        localStorage.setItem('user',JSON.stringify({id: data.user.id, username: data.user.username, email: data.user.email}));
+        login({id: data.user.id, username: data.user.username, email: data.user.email});
         navigate('/taskdashboard',{replace: true});
       }
       

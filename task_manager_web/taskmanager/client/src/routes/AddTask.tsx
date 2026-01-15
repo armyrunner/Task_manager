@@ -19,8 +19,9 @@ import {
   CModalTitle,
   CModalFooter,
   CInputGroup,
+  CSpinner,
 } from "@coreui/react";
-import { cilSave, cilX,cilPlus } from "@coreui/icons";
+import { cilSave, cilX,cilPlus, cilList } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +30,8 @@ import { CTooltip } from "@coreui/react";
 function AddTask() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const [loading,setLoading] = useState<boolean>(false);
+  const [error,setError] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState("");
   const [categories, setCategories] = useState<{value: string, label: string}[]>([
     {value: "personal", label: "Personal"},
@@ -36,13 +39,14 @@ function AddTask() {
     {value: "family", label: "Family"},
     {value: "other", label: "Other"},
   ]);
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
   
   const [task, setTask] = useState({
-    name: "",
-    dueDate: "",
-    startDate: "",
-    finishDate: "",
+    description: "",
+    due_date: "",
+    start_date: "",
+    finish_date: "",
     status: "pending",
     category: "",
     notes: "",
@@ -79,25 +83,71 @@ function AddTask() {
     setTask((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("New Task:", task);
+
+    setLoading(true);
+    setError(null);
+
+    if(!task.description){
+      setError('Task description is required');
+      setLoading(false);
+      return;
+    }
+    
     // TODO: Send to API
-    setTask({
-      name: "",
-      dueDate: "",
-      startDate: "",
-      finishDate: "",
-      status: "pending",
-      category: "",
-      notes: "",
-    });
-    // Optionally navigate back to dashboard
-    // navigate('/taskdashboard');
+    try{
+      const response = await fetch('http://localhost:8080/api/tasks',{
+        method: 'POST',
+        headers: {'Content-Type': 'application/json','Authorization': `Bearer ${localStorage.getItem('access_token')}`},
+        body: JSON.stringify(task),
+        credentials: 'include'
+      });
+      const data = await response.json();
+      if(!response.ok){
+        throw new Error(data.message || data.Error || 'Failed to add task');
+      }
+      setTask({
+        description: "",
+        due_date: "",
+        start_date: "",
+        finish_date: "",
+        status: "pending",
+        category: "",
+        notes: "",
+      });
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Error adding task:', error);
+      setError('Failed to add task. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
     navigate("/taskdashboard");
+  };
+
+  const handleGoToDashboard = () => {
+    setShowSuccessModal(false);
+    navigate("/taskdashboard",{replace: true});
+  };
+
+  const handleAddAnotherTask = () => {
+    setShowSuccessModal(false);
+    setTask({
+      description: "",
+      due_date: "",
+      start_date: "",
+      finish_date: "",
+      status: "pending",
+      category: "",
+      notes: "",  
+    });
+    setLoading(false);
+    setError(null);
   };
 
   return (
@@ -108,15 +158,17 @@ function AddTask() {
         </CCardHeader>
 
         <CForm onSubmit={handleSubmit}>
+          {loading && <CSpinner color="success" />}
+          {error && <div className="alert alert-danger">{error}</div>}
           <CCardBody>
             <CRow>
               <CCol md={12} className="mb-3">
                 <CFormLabel htmlFor="name">Task Name</CFormLabel>
                 <CFormInput
                   type="text"
-                  id="name"
-                  name="name"
-                  value={task.name}
+                  id="description"
+                  name="description"
+                  value={task.description}
                   onChange={handleChange}
                   required
                 />
@@ -125,9 +177,9 @@ function AddTask() {
                 <CFormLabel htmlFor="startDate">Start Date</CFormLabel>
                 <CFormInput
                   type="date"
-                  id="startDate"
-                  name="startDate"
-                  value={task.startDate}
+                  id="start_date"
+                  name="start_date"
+                  value={task.start_date}
                   onChange={handleChange}
                 />
               </CCol>
@@ -135,9 +187,9 @@ function AddTask() {
                 <CFormLabel htmlFor="finishDate">Finish Date</CFormLabel>
                 <CFormInput
                   type="date"
-                  id="finishDate"
-                  name="finishDate"
-                  value={task.finishDate}
+                  id="finish_date"
+                  name="finish_date"
+                  value={task.finish_date}
                   onChange={handleChange}
                 />
               </CCol>
@@ -167,9 +219,9 @@ function AddTask() {
                 <CFormLabel htmlFor="dueDate">Due Date</CFormLabel>
                 <CFormInput
                   type="date"
-                  id="dueDate"
-                  name="dueDate"
-                  value={task.dueDate}
+                  id="due_date"
+                  name="due_date"
+                  value={task.due_date}
                   onChange={handleChange}
                 />
               </CCol>
@@ -227,11 +279,30 @@ function AddTask() {
           />
         </CModalBody>
         <CModalFooter>
+
           <CButton color="secondary" variant="outline" onClick={handleCloseModal}>
             Cancel
           </CButton>
           <CButton color="primary" onClick={handleSaveCategory}>
             Save
+          </CButton>
+        </CModalFooter>
+      </CModal>
+      <CModal visible={showSuccessModal}>
+        <CModalHeader>
+          <CModalTitle>Task Added Successfully</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <p>Task added successfully. You can now add another task.</p>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="primary" onClick={handleAddAnotherTask}>
+            <CIcon icon={cilPlus} className="me-2" />
+            Add Another Task
+          </CButton>
+          <CButton color="primary" onClick={handleGoToDashboard}>
+            <CIcon icon={cilList} className="me-2" />
+            Go to Dashboard
           </CButton>
         </CModalFooter>
       </CModal>

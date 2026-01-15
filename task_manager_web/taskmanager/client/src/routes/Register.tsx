@@ -7,7 +7,7 @@ import { useState } from "react";
 
 
 
-interface LoginCredentials {
+interface RegisterRequest {
   username: string;
   email: string;
   password: string;
@@ -17,8 +17,7 @@ interface LoginCredentials {
 function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [formData, setFormData] = useState<LoginCredentials>({
+  const [formData, setFormData] = useState<RegisterRequest>({
     username: "",
     email: "",
     password: "",
@@ -26,7 +25,7 @@ function Register() {
   const [loading,setloading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   
-  const handleChange  = (e: React.ChangeEvent<HTMLInputElement) => {
+  const handleChange  = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]:e.target.value,
@@ -37,38 +36,39 @@ function Register() {
     e.preventDefault();
     setError(null);
 
-    if (!formData.email || !formData.password){
-      setError('Email or Password is invalid!!');
+    if (!formData.username || !formData.email || !formData.password){
+      setError('All fields are required!!');
       return;
     }
 
     setloading(true);
 
     try{
-      const credentials: LoginCredentials = { email, password};
+      const registerCred: RegisterRequest = { username: formData.username, email: formData.email, password: formData.password};
 
-      const resp = await fetch('http://localhost:8080/api/auth/login',{
+      const resp = await fetch('http://localhost:8080/api/auth/register',{
         method: 'POST',
         headers: {'Content-Type':'application/json',},
-        body: JSON.stringify(credentials),
+        body: JSON.stringify(registerCred), 
         credentials: 'include'
       });
 
       const data = await resp.json();
 
       if(!resp.ok){
-        throw new Error(data.message || data.Error || 'Login Failed');
+        throw new Error(data.message || data.Error || 'Registration Failed');
       }
       
       if(data.access_token){
         localStorage.setItem('access_token',data.access_token)
         localStorage.setItem('refresh_token',data.refresh_token)
-        login(data.user);
+        localStorage.setItem('user',JSON.stringify({id: data.user.id, username: data.user.username, email: data.user.email}));
+        login({id: data.user.id, username: data.user.username, email: data.user.email});
         navigate('/taskdashboard',{replace: true});
       }
       
     } catch(err){
-      console.error('Login error:', err);
+      console.error('Registration error:', err);
       setError(
         err instanceof Error ? err.message : 'Something went wrong. Please Try again!'
       );
@@ -83,36 +83,57 @@ function Register() {
       id="content"
     >
     <div className="col-md-6">
-      <Form>
+      <Form onSubmit={handleSubmit}>
         <div className="header-text mb-4">
           <h1>Create Account</h1>
         </div>
+        {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
         <div className="input-group mb-3">
           <input
             type="text"
+            name="username"
             placeholder="username"
             className="form-control form-control-lg bg-light fs-6"
+            value={formData.username}
+            onChange={handleChange}
+            disabled={loading}
+            required
           ></input>
         </div>
         <div className="input-group mb-3">
           <input
             type="email"
+            name="email"
             placeholder="Email"
             className="form-control form-control-lg bg-light fs-6"
+            value={formData.email}
+            onChange={handleChange}
+            disabled={loading}
+            required
           ></input>
         </div>
         <div className="input-group mb-3 justify-content-center">
           <input
             type="password"
+            name="password"
             placeholder="Password"
             className="form-control form-control-lg bg-light fs-6"
+            value={formData.password}
+            onChange={handleChange}
+            disabled={loading}
+            required
           ></input>
         </div>
         <Button
           variant="success"
           type="submit"
           className="btn border-white text-white w-50 fs-6"
-          onClick={handleSubmit}
+          disabled={loading}
+
         >
           Register
         </Button>
