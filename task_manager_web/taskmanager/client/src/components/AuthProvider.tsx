@@ -2,28 +2,43 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { AuthContext } from './AuthContext';
 
-// Test user for development
-const TEST_USER = {
-  email: 'test@example.com',
-  password: 'password123',
-  name: 'Test User'
-};
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<{ email: string; name: string } | null>(null);
+  const [user, setUser] = useState<{id: number, username: string, email: string} | null>(null);
 
-  const login = (email: string, password: string): boolean => {
-    // Check against test user
-    if (email === TEST_USER.email && password === TEST_USER.password) {
-      setIsLoggedIn(true);
-      setUser({ email: TEST_USER.email, name: TEST_USER.name });
-      return true;
-    }
-    return false;
+  useState(() => {
+   const accessToken = localStorage.getItem('access_token');
+
+   if (accessToken) {
+    const userStoredInfo = localStorage.getItem('user');
+    if (userStoredInfo) {
+      try {
+        const parsedUser = JSON.parse(userStoredInfo);
+        setUser(parsedUser);
+        setIsLoggedIn(true);
+      } catch (error) {
+        console.error('Error parsing user info:', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('access_token');
+      }
+    } else {
+      console.warn('Access token found but no user data in local storage')
+   }
+  }
+  });
+
+  const login = (userData:{id: number, username: string, email: string}) => {
+    setIsLoggedIn(true);
+    setUser(userData);
+    return true;
   };
 
   const logout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     setIsLoggedIn(false);
     setUser(null);
   };

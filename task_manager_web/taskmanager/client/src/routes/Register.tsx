@@ -18,7 +18,7 @@ function Register() {
         <div className="input-group mb-3">
           <input
             type="text"
-            placeholder="Name"
+            placeholder="username"
             className="form-control form-control-lg bg-light fs-6"
           ></input>
         </div>

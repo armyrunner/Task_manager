@@ -28,6 +28,7 @@ function SignIn() {
 
     if (!email || !password){
       setError('Email or Password is invalid!!');
+      return;
     }
 
     setloading(true);
@@ -49,11 +50,13 @@ function SignIn() {
         throw new Error(data.message || data.Error || 'Login Failed');
       }
       
-      if(data.token){
-        localStorage.setItem('token',data.token)
+      if(data.access_token){
+        localStorage.setItem('access_token',data.access_token)
+        localStorage.setItem('refresh_token',data.refresh_token)
+        login(data.user);
+        navigate('/taskdashboard',{replace: true});
       }
       
-      navigate('/taskdashboard',{replace: true});
     } catch(err){
       console.error('Login error:', err);
       setError(

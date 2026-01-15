@@ -8,7 +8,7 @@ interface Props {
 
 function NavBar({ title}: Props) {
   const navigate = useNavigate();
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, user } = useAuth();
 
   const handleAuthClick = () => {
     if (isLoggedIn) {
@@ -69,6 +69,7 @@ function NavBar({ title}: Props) {
 
           {/* Right side button */}
           <div className="d-flex">
+            {isLoggedIn && <span className="nav-link">Welcome, {user?.email}</span>}
             <button
               onClick={handleAuthClick}
               className={`btn ${
