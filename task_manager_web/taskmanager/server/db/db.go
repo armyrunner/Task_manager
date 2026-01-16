@@ -160,6 +160,26 @@ func migrateCategoryData() error {
 		return nil
 	}
 
+	// Check if any users exist - we need at least one user for the foreign key
+	var userCount int
+	err = DB.QueryRow("SELECT COUNT(*) FROM users").Scan(&userCount)
+	if err != nil {
+		return err
+	}
+
+	if userCount == 0 {
+		fmt.Println("No users exist yet - category migration will run after first user registers.")
+		return nil
+	}
+
+	// Get the first user's ID to associate categories with
+	var defaultUserID int
+	err = DB.QueryRow("SELECT id FROM users ORDER BY id LIMIT 1").Scan(&defaultUserID)
+	if err != nil {
+		fmt.Println("Could not get default user ID, skipping category migration.")
+		return nil
+	}
+
 	fmt.Println("Migrating category data to new categories table...")
 
 	// Get unique categories from initial_tasks (excluding empty strings)
@@ -176,10 +196,6 @@ func migrateCategoryData() error {
 		return err
 	}
 	defer rows.Close()
-
-	// Insert each unique category into categories table with user_id = 1 (default user)
-	// In production, you'd want to associate with actual users
-	defaultUserID := 1
 
 	for rows.Next() {
 		var categoryName string
