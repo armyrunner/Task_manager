@@ -45,7 +45,7 @@ const Dashboard = () => {
           <CInputGroup>
             <CFormInput
               type="search"
-              placeholder="Search..."
+              placeholder="Search ID or Description"
               aria-label="Search"
             />
             <CButton type="button" color="primary" variant="outline">
@@ -60,9 +60,14 @@ const Dashboard = () => {
               Dashboard
             </Link>
           </CNavItem>
-          <CNavItem href="#">
-            <CIcon customClassName="nav-icon text-primary" icon={cilSitemap} />
-            Add Category
+          <CNavItem>
+            <Link to="addcategory" className="nav-link">
+              <CIcon
+                customClassName="nav-icon text-primary"
+                icon={cilSitemap}
+              />
+              Add Category
+            </Link>
           </CNavItem>
           <CNavItem>
             <Link to="addtask" className="nav-link">
@@ -113,6 +118,7 @@ const Dashboard = () => {
             />
             Completed Tasks
           </CNavItem>
+              {/* Need to Add report drop down Initial / Category (possibly sub-category) / Completed Tasks */}
         </CSidebarNav>
         <CSidebarHeader className="border-top">
           <CSidebarToggler />
