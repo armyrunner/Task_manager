@@ -39,6 +39,7 @@ function UpdateTask() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [task, setTask] = useState({
     id: 0,
@@ -167,6 +168,33 @@ function UpdateTask() {
     navigate("/taskdashboard");
   };
 
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    setLoading(true);
+
+    try{
+      const resp = await fetch(
+        `http://localhost:8080/api/tasks?search=${encodeURIComponent(searchQuery)}`,{
+          headers:{
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`
+          },
+        }
+      );
+      const data = await resp.json();
+      if (resp.ok && data.length > 0){
+        setTask(data[0]);
+      } else {
+        setError("Task not Found");
+      }
+    } catch (err) {
+      setError("Search failed");
+      console.error("Search failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="d-flex justify-content-center align-items-start w-100 h-100 pt-4">
       <CCard style={{ maxWidth: "600px", width: "100%" }}>
@@ -175,11 +203,13 @@ function UpdateTask() {
           <div className="d-flex gap-2">
             <CFormInput
               type="search"
+              value={searchQuery}
               placeholder="Search By Description"
               aria-label="Search"
               style={{ maxWidth: "200px" }}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <CButton type="button" color="primary" variant="outline">
+            <CButton type="button" color="primary" variant="outline" onClick={handleSearch}>
               <CIcon icon={cilSearch} />
             </CButton>
           </div>

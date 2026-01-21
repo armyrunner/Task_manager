@@ -75,7 +75,7 @@ function CardLayout() {
   };
 
   const handleUpdateTask = () => {
-    navigate("updatetask");
+    navigate(`/updatetask/${selectedCard?.id}`);
   };
 
   return (
