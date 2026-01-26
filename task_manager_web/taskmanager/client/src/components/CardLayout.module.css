@@ -1,15 +1,25 @@
-.cardMainContent{
-    width: 15rem;
-    height: 20rem;
-    background-color: #f5f5f5;
-    cursor: pointer;
-  }
+.cardMainContent {
+  background-color: #f5f5f5;
+  cursor: pointer;
+  padding: 15px;
+  min-height: 20rem;
+  display: flex;
+  flex-direction: column;
+}
 
 .cardBody {
-    padding: 0rem;
-  }
+  padding: 0;
+  flex: 1;
+}
 
-  .cardBodyText {
-    margin: 0;
-    padding: 0;
-  }
+.cardBodyText {
+  margin: 0;
+  padding: 0;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, max-content));
+  gap: 1.5rem;
+  justify-content: start;
+}

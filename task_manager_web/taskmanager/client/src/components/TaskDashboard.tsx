@@ -32,7 +32,13 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Fetch categories when component mounts
-    fetch("http://localhost:8080/api/categories")
+    fetch("http://localhost:8080/api/categories",{
+      method: "GET",
+      headers:{
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    })
       .then((res) => res.json())
       .then((data) => setCategories(data))
       .catch((err) => console.error(err));
@@ -102,12 +108,12 @@ const Dashboard = () => {
               </>
             }
           >
-            {categories.map((category) => (
-              <CNavItem key={category} href="#">
+            {categories.map((category: any) => (
+              <CNavItem key={category.id} href="#">
                 <span className="nav-icon">
                   <span className="nav-icon-bullet"></span>
                 </span>{" "}
-                Nav dropdown item
+                {category.name}
               </CNavItem>
             ))}
           </CNavGroup>

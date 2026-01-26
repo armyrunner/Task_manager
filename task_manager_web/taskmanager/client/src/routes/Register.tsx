@@ -1,6 +1,6 @@
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import styles from "../components/SignIn.module.css";
+import styles from "./SignIn.module.css";
 import { useAuth } from "../components/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -49,8 +49,7 @@ function Register() {
       const resp = await fetch('http://localhost:8080/api/auth/register',{
         method: 'POST',
         headers: {'Content-Type':'application/json',},
-        body: JSON.stringify(registerCred), 
-        credentials: 'include'
+        body: JSON.stringify(registerCred)
       });
 
       const data = await resp.json();

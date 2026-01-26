@@ -9,7 +9,7 @@
 
 .mainContent {
   flex: 1;
-  padding: 20px;
+  padding: 1.5rem;
   overflow-y: auto;
   background-color: #faf8f5;
 }

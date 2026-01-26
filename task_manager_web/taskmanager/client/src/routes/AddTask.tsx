@@ -63,7 +63,7 @@ function AddTask() {
       const response = await fetch("http://localhost:8080/api/categories", {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": 'application/x-www-form-urlencoded',
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });

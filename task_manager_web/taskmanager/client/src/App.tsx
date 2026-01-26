@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import NavBar from './components/NavBar';
 
-import SignIn from './components/SignIn';
+import SignIn from './routes/SignIn';
 import Register from './routes/Register';
 import HomePage from './routes/HomePage';
 import TaskDashboard from './components/TaskDashboard'

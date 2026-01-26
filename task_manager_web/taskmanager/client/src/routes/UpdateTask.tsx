@@ -62,7 +62,7 @@ function UpdateTask() {
       const response = await fetch("http://localhost:8080/api/categories", {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": 'application/json',
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
@@ -92,7 +92,7 @@ function UpdateTask() {
       const response = await fetch("http://localhost:8080/api/categories", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": 'application/json',
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
         body: JSON.stringify({ name: newCategory }),
@@ -145,11 +145,10 @@ function UpdateTask() {
       const response = await fetch("http://localhost:8080/api/tasks", {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": 'application/json',
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
-        body: JSON.stringify(task),
-        credentials: "include",
+        body: JSON.stringify(task)
       });
       const data = await response.json();
       if (!response.ok) {
@@ -177,15 +176,25 @@ function UpdateTask() {
       const resp = await fetch(
         `http://localhost:8080/api/tasks?search=${encodeURIComponent(searchQuery)}`,{
           headers:{
+            'Content-Type':'application/json',
             Authorization: `Bearer ${localStorage.getItem("access_token")}`
           },
         }
       );
       const data = await resp.json();
-      if (resp.ok && data.length > 0){
-        setTask(data[0]);
+      console.log("Search response",data)
+      let taskFound = null;
+
+      if (Array.isArray(data) && data.length > 0){
+        taskFound = data;
+      } else if (data.tasks && Array.isArray(data.tasks) && data.tasks.length > 0){
+        taskFound = data.tasks;
+      }
+
+      if(taskFound){
+        setTask(taskFound)
       } else {
-        setError("Task not Found");
+        setError("Task not found!")
       }
     } catch (err) {
       setError("Search failed");

@@ -3,7 +3,7 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./SignIn.module.css";
-import { useAuth } from "./useAuth";
+import { useAuth } from "../components/useAuth";
 
 interface LoginCredentials {
   email: string;
@@ -35,18 +35,17 @@ function SignIn() {
     setError(null);
 
     try{
-      const credentials: LoginCredentials = { email, password};
+      const credentials: LoginCredentials = {email, password};
 
       const resp = await fetch('http://localhost:8080/api/auth/login',{
         method: 'POST',
         headers: {'Content-Type':'application/json',},
-        body: JSON.stringify(credentials),
-        credentials: 'include'
+        body: JSON.stringify(credentials)
       });
 
       const data = await resp.json();
 
-      if(!resp.ok){
+      if(!resp.ok){ 
         throw new Error(data.message || data.Error || 'Login Failed');
       }
       
