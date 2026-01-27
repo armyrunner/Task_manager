@@ -19,6 +19,8 @@ import {
   CInputGroup,
   CTooltip,
   CSpinner,
+  CListGroup,
+  CListGroupItem,
 } from "@coreui/react";
 import { cilSave, cilX, cilSearch, cilPlus } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
@@ -31,6 +33,18 @@ interface Category {
   name: string;
 }
 
+interface Task {
+  id: number;
+  description: string;
+  due_date: string;
+  start_date: string;
+  finish_date: string;
+  status: string;
+  category_id: number;
+  category_name: string;
+  notes: string;
+}
+
 function UpdateTask() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
@@ -40,8 +54,10 @@ function UpdateTask() {
   const [error, setError] = useState<string | null>(null);
   const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Task[]>([]);
+  const [showSearchModal, setShowSearchModal] = useState<boolean>(false);
 
-  const [task, setTask] = useState({
+  const [task, setTask] = useState<Task>({
     id: 0,
     description: "",
     due_date: "",
@@ -49,10 +65,11 @@ function UpdateTask() {
     finish_date: "",
     status: "pending",
     category_id: 0,
+    category_name: "",
     notes: "",
   });
 
-  // Fetch categories on component mount
+  //  =======  Fetch categories on component mount ==========
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -62,7 +79,7 @@ function UpdateTask() {
       const response = await fetch("http://localhost:8080/api/categories", {
         method: "GET",
         headers: {
-          "Content-Type": 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
@@ -75,6 +92,8 @@ function UpdateTask() {
     }
   };
 
+  // ============= HANDLE OPEN AND CLOSE MODALS
+
   const handleOpenModal = () => {
     setShowModal(true);
   };
@@ -84,6 +103,8 @@ function UpdateTask() {
     setNewCategory("");
   };
 
+  // ============= HANDLE SAVE CATEGORY
+
   const handleSaveCategory = async () => {
     if (newCategory.trim() === "") return;
 
@@ -92,7 +113,7 @@ function UpdateTask() {
       const response = await fetch("http://localhost:8080/api/categories", {
         method: "POST",
         headers: {
-          "Content-Type": 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
         body: JSON.stringify({ name: newCategory }),
@@ -115,6 +136,8 @@ function UpdateTask() {
     }
   };
 
+  // ============= HANDLE CHANGE
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -128,6 +151,8 @@ function UpdateTask() {
       setTask((prev) => ({ ...prev, [name]: value }));
     }
   };
+
+  // ============= HANDLE SEARCH
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -145,10 +170,10 @@ function UpdateTask() {
       const response = await fetch("http://localhost:8080/api/tasks", {
         method: "PUT",
         headers: {
-          "Content-Type": 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
-        body: JSON.stringify(task)
+        body: JSON.stringify(task),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -167,34 +192,56 @@ function UpdateTask() {
     navigate("/taskdashboard");
   };
 
+  // =========== HANDLE SEARCH
+
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+    const trimmedQuery = searchQuery.trim();
+    if (!trimmedQuery) return;
 
     setLoading(true);
+    setError(null);
 
-    try{
+    try {
       const resp = await fetch(
-        `http://localhost:8080/api/tasks?search=${encodeURIComponent(searchQuery)}`,{
-          headers:{
-            'Content-Type':'application/json',
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`
+        `http://localhost:8080/api/tasks?search=${encodeURIComponent(
+          trimmedQuery
+        )}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${
+              localStorage.getItem("access_token") ?? ""
+            }`,
           },
         }
       );
-      const data = await resp.json();
-      console.log("Search response",data)
-      let taskFound = null;
 
-      if (Array.isArray(data) && data.length > 0){
+      if (!resp.ok) {
+        throw new Error(`Server responded with ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      console.log("Search response", data);
+      let taskFound: Task[] = [];
+
+      if (Array.isArray(data)) {
         taskFound = data;
-      } else if (data.tasks && Array.isArray(data.tasks) && data.tasks.length > 0){
+      } else if (
+        data.tasks &&
+        Array.isArray(data.tasks) &&
+        data.tasks.length > 0
+      ) {
         taskFound = data.tasks;
       }
 
-      if(taskFound){
-        setTask(taskFound)
+      if (taskFound.length === 0) {
+        setError("No tasks found!");
+      } else if (taskFound.length === 1) {
+        setTask(taskFound[0]);
       } else {
-        setError("Task not found!")
+        setSearchResults(taskFound);
+        setShowSearchModal(true);
       }
     } catch (err) {
       setError("Search failed");
@@ -202,6 +249,14 @@ function UpdateTask() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ============= HANDLE SELECT TASK
+
+  const handleSelectTask = (selectedTask: Task) => {
+    setTask(selectedTask);
+    setShowSearchModal(false);
+    setSearchResults([]);
   };
 
   return (
@@ -218,7 +273,12 @@ function UpdateTask() {
               style={{ maxWidth: "200px" }}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <CButton type="button" color="primary" variant="outline" onClick={handleSearch}>
+            <CButton
+              type="button"
+              color="primary"
+              variant="outline"
+              onClick={handleSearch}
+            >
               <CIcon icon={cilSearch} />
             </CButton>
           </div>
@@ -366,6 +426,31 @@ function UpdateTask() {
             {categoryLoading ? <CSpinner size="sm" /> : "Save"}
           </CButton>
         </CModalFooter>
+      </CModal>
+      <CModal
+        visible={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+      >
+        <CModalHeader>
+          <CModalTitle>Search Results: Select a task to update!!</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CListGroup>
+            {searchResults.map((t) => (
+              <CListGroupItem
+                key={t.id}
+                onClick={() => handleSelectTask(t)}
+                style={{ cursor: "pointer" }}
+                className="list-group-item-action"
+              >
+                <strong>{t.description}</strong>
+                <small className="text-muted d-block">
+                  Due: {t.due_date} | Status: {t.status}
+                </small>
+              </CListGroupItem>
+            ))}
+          </CListGroup>
+        </CModalBody>
       </CModal>
     </div>
   );

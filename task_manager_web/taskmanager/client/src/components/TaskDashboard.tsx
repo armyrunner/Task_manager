@@ -44,6 +44,8 @@ const Dashboard = () => {
       .catch((err) => console.error(err));
   }, []);
 
+  
+
   return (
     <div className={styles.pageWrapper}>
       <CSidebar className="border-end">

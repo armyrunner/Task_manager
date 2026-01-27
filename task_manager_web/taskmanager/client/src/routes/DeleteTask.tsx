@@ -17,12 +17,25 @@ import {
   CModalBody,
   CModalFooter,
   CSpinner,
+  CListGroup,
+  CListGroupItem,
 } from "@coreui/react";
 import { cilTrash, cilX, cilSearch, cilWarning } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
-import React, {useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+interface Task {
+  id: number;
+  description: string;
+  due_date: string;
+  start_date: string;
+  finish_date: string;
+  status: string;
+  category_id: number;
+  category_name: string;
+  notes: string;
+}
 
 function DeleteTask() {
   const navigate = useNavigate();
@@ -30,7 +43,9 @@ function DeleteTask() {
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [task, setTask] = useState({
+  const [searchResults, setSearchResults] = useState<Task[]>([]);
+  const [showSearchModal, setShowSearchModal] = useState<boolean>(false);
+  const [task, setTask] = useState<Task>({
     id: 0,
     description: "",
     due_date: "",
@@ -57,43 +72,84 @@ function DeleteTask() {
   };
 
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+    const trimmedQuery = searchQuery.trim();
+    if (!trimmedQuery) return;
 
     setLoading(true);
+    setError(null);
 
-    try{
-      const response = await fetch(
-        `http://localhost:8080/api/tasks?search=${encodeURIComponent(searchQuery)}`,{
-          headers:{
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`
+    try {
+      const resp = await fetch(
+        `http://localhost:8080/api/tasks?search=${encodeURIComponent(
+          trimmedQuery
+        )}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${
+              localStorage.getItem("access_token") ?? ""
+            }`,
           },
         }
       );
-      const data = await response.json();
-      if (response.ok && data.length > 0){
-        setTask(data[0]);
-      } else {
-        setError("Task not Found");
+
+      if (!resp.ok) {
+        throw new Error(`Server responded with ${resp.status}`);
       }
-    } catch (error) {
+
+      const data = await resp.json();
+      console.log("Search response", data);
+      let taskFound: Task[] = [];
+
+      if (Array.isArray(data)) {
+        taskFound = data;
+      } else if (
+        data.tasks &&
+        Array.isArray(data.tasks) &&
+        data.tasks.length > 0
+      ) {
+        taskFound = data.tasks;
+      }
+
+      if (taskFound.length === 0) {
+        setError("No tasks found!");
+      } else if (taskFound.length === 1) {
+        setTask(taskFound[0]);
+      } else {
+        setSearchResults(taskFound);
+        setShowSearchModal(true);
+      }
+    } catch (err) {
       setError("Search failed");
-      console.error("Search failed:", error);
+      console.error("Search failed:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  // ============= HANDLE SELECT TASK
+
+  const handleSelectTask = (selectedTask: Task) => {
+    setTask(selectedTask);
+    setShowSearchModal(false);
+    setSearchResults([]);
+  };
+
   const handleConfirmDelete = async () => {
     console.log("Delete Task:", task);
-    
-    try{
-      const response = await fetch(`http://localhost:8080/api/tasks/${task.id}`,{
-        method: "DELETE",
-        headers:{
-          'Authorization': `Bearer ${localStorage.getItem("access_token")}`
-        },
-        credentials:"include"
-      });
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/tasks/${task.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+          credentials: "include",
+        }
+      );
       setTask({
         id: 0,
         description: "",
@@ -106,18 +162,17 @@ function DeleteTask() {
         notes: "",
       });
       const data = await response.json();
-      if(!response.ok){
-        throw new Error(data.message || data.Error || 'Failed to delete task')
+      if (!response.ok) {
+        throw new Error(data.message || data.Error || "Failed to delete task");
       }
       setShowConfirmModal(false);
       navigate("/taskdashboard");
-    } catch(error){
-      console.error("Failed to delete", error)
-      setError("Failed to Delete Task!")
+    } catch (error) {
+      console.error("Failed to delete", error);
+      setError("Failed to Delete Task!");
     } finally {
       setLoading(false);
     }
-    
   };
 
   const handleCancelDelete = () => {
@@ -130,7 +185,7 @@ function DeleteTask() {
 
   return (
     <div className="d-flex justify-content-center align-items-start w-100 h-100 pt-4">
-      {loading && <CSpinner  color="success" />}
+      {loading && <CSpinner color="success" />}
       {error && <div className="alert alert-danger">{error}</div>}
       <CCard style={{ maxWidth: "600px", width: "100%" }}>
         <CCardHeader className="d-flex justify-content-between align-items-center">
@@ -144,7 +199,12 @@ function DeleteTask() {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ maxWidth: "200px" }}
             />
-            <CButton type="button" color="primary" variant="outline" onClick={handleSearch}>
+            <CButton
+              type="button"
+              color="primary"
+              variant="outline"
+              onClick={handleSearch}
+            >
               <CIcon icon={cilSearch} />
             </CButton>
           </div>
@@ -192,7 +252,8 @@ function DeleteTask() {
                   type="text"
                   id="category"
                   value={task.category_name}
-                  disabled />
+                  disabled
+                />
               </CCol>
               <CCol md={6} className="mb-3">
                 <CFormLabel htmlFor="due_date">Due Date</CFormLabel>
@@ -274,9 +335,33 @@ function DeleteTask() {
           </CButton>
         </CModalFooter>
       </CModal>
+      <CModal
+        visible={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+      >
+        <CModalHeader>
+          <CModalTitle>Search Results: Select a task to delete!!</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CListGroup>
+            {searchResults.map((t) => (
+              <CListGroupItem
+                key={t.id}
+                onClick={() => handleSelectTask(t)}
+                style={{ cursor: "pointer" }}
+                className="list-group-item-action"
+              >
+                <strong>{t.description}</strong>
+                <small className="text-muted d-block">
+                  Due: {t.due_date} | Status: {t.status}
+                </small>
+              </CListGroupItem>
+            ))}
+          </CListGroup>
+        </CModalBody>
+      </CModal>
     </div>
   );
 }
 
 export default DeleteTask;
-
