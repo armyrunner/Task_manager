@@ -130,7 +130,7 @@ function Reports() {
             onChange={(e) => { 
                 setReportType(e.target.value);
                 if(e.target.value === "Category" ){
-                    setShowModal(true);
+                    handleOpenModal;
                 }
             }}
             >

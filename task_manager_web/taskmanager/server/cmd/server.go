@@ -21,6 +21,7 @@ var serverCmd = &cobra.Command{
 		http.HandleFunc("/api/auth/login", auth.LoginHandler)
 		http.HandleFunc("/api/auth/refresh", auth.RefreshHandler)
 		http.HandleFunc("/api/auth/logout", auth.LogoutHandler)
+		http.HandleFunc("/api/auth/reports",auth.ReportsHandler)
 
 		// Task routes (protected with auth middleware)
 		http.HandleFunc("/api/tasks", auth.AuthMiddleware(api.TaskHandler))

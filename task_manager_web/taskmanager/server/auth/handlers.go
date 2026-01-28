@@ -300,3 +300,12 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Logged out successfully"})
 }
+
+
+func ReportHandler(w http.ResponseWriter, r *http.Request){
+
+	// Need to Add route for reports
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Loaded Reports Correctly!"})
+}
