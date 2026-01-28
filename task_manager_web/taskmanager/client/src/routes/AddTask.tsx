@@ -33,6 +33,18 @@ interface Category {
   name: string;
 }
 
+interface Task {
+  id: number;
+  description: string;
+  due_date: string;
+  start_date: string;
+  finish_date: string;
+  status: string;
+  category_id: number;
+  category_name: string;
+  notes: string;
+}
+
 function AddTask() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
@@ -43,13 +55,15 @@ function AddTask() {
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
 
-  const [task, setTask] = useState({
+  const [task, setTask] = useState<Task>({
+    id: 0,
     description: "",
     due_date: "",
     start_date: "",
     finish_date: "",
     status: "pending",
     category_id: 0,
+    category_name: "",
     notes: "",
   });
 
@@ -158,12 +172,14 @@ function AddTask() {
         throw new Error(data.message || data.Error || "Failed to add task");
       }
       setTask({
+        id: 0,
         description: "",
         due_date: "",
         start_date: "",
         finish_date: "",
         status: "pending",
         category_id: 0,
+        category_name: "",
         notes: "",
       });
       setShowSuccessModal(true);
@@ -187,12 +203,14 @@ function AddTask() {
   const handleAddAnotherTask = () => {
     setShowSuccessModal(false);
     setTask({
+      id: 0,
       description: "",
       due_date: "",
       start_date: "",
       finish_date: "",
       status: "pending",
       category_id: 0,
+      category_name: "",
       notes: "",
     });
     setLoading(false);

@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
-
+	
 	"github.com/armyrunner/task_manager/models"
 )
 
@@ -272,6 +272,59 @@ func Select_Initial_Tasks() ([]models.Task, error) {
 	return tasks, nil
 }
 
+func Select_Initial_Tasks_By_Search(search string, userID int) ([]models.Task, error) {
+	stmt, err := DB.Prepare(`
+		SELECT t.id, t.user_id, t.category_id, COALESCE(c.name, '') as category_name,
+		       t.task_description, t.due_date, t.start_date, t.finish_date, t.status, t.notes
+		FROM initial_tasks t
+		LEFT JOIN categories c ON t.category_id = c.id
+		WHERE t.task_description LIKE ?
+		AND t.user_id = ?
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query("%" + search + "%", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []models.Task
+
+	for rows.Next() {
+		var task models.Task
+		var categoryID sql.NullInt64
+		var userID sql.NullInt64
+		err := rows.Scan(
+			&task.ID,
+			&userID,
+			&categoryID,
+			&task.CategoryName,
+			&task.Description,
+			&task.DueDate,
+			&task.StartDate,
+			&task.FinishDate,
+			&task.Status,
+			&task.Notes,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if categoryID.Valid {
+			task.CategoryID = int(categoryID.Int64)
+		}
+		if userID.Valid {
+			task.UserID = int(userID.Int64)
+		}
+		task.OriginalID = 0 // Initial tasks don't have an original ID
+		tasks = append(tasks, task)
+	}
+
+	return tasks, nil
+}
 // MoveCompletedTask moves a task from initial_tasks to completed_tasks when status is "complete"
 func MoveCompletedTask(tks *models.Task) error {
 	completedStatus := "Completed"

@@ -21,6 +21,7 @@ import {
   cilSitemap,
   cilSearch,
   cilHome,
+  cilSpreadsheet,
 } from "@coreui/icons";
 import "@coreui/coreui/dist/css/coreui.min.css";
 import styles from "./TaskDashboard.module.css";
@@ -32,19 +33,17 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Fetch categories when component mounts
-    fetch("http://localhost:8080/api/categories",{
+    fetch("http://localhost:8080/api/categories", {
       method: "GET",
-      headers:{
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
-      }
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
     })
       .then((res) => res.json())
       .then((data) => setCategories(data))
       .catch((err) => console.error(err));
   }, []);
-
-  
 
   return (
     <div className={styles.pageWrapper}>
@@ -63,7 +62,7 @@ const Dashboard = () => {
         </CSidebarHeader>
         <CSidebarNav>
           <CNavItem>
-            <Link to="/taskdashboard" className="nav-link">
+            <Link to="taskdashboard" className="nav-link">
               <CIcon customClassName="nav-icon text-primary" icon={cilHome} />{" "}
               Dashboard
             </Link>
@@ -126,7 +125,13 @@ const Dashboard = () => {
             />
             Completed Tasks
           </CNavItem>
-              {/* Need to Add report drop down Initial / Category (possibly sub-category) / Completed Tasks */}
+          {/* Need to Add report drop down Initial / Category (possibly sub-category) / Completed Tasks */}
+          <CNavItem>
+            <Link to="reports" className="nav-link">
+              <CIcon customClassName="nav-icon text-primary" icon={cilSpreadsheet} />{" "}
+              Print Reports
+            </Link>
+          </CNavItem>
         </CSidebarNav>
         <CSidebarHeader className="border-top">
           <CSidebarToggler />

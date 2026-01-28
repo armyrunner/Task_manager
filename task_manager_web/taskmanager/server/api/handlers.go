@@ -5,17 +5,18 @@ import (
 	"net/http"
 
 	"github.com/armyrunner/task_manager/db"
+	"github.com/armyrunner/task_manager/auth"
 	"github.com/armyrunner/task_manager/models"
 )
 
-func SetHeaders(w http.ResponseWriter){
+func SetHeaders(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 }
 
-func GetTaskHandler(w http.ResponseWriter, r *http.Request){
+func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 	SetHeaders(w)
 
 	if r.Method == http.MethodOptions {
@@ -23,18 +24,32 @@ func GetTaskHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	tasks, err  := db.Select_Initial_Tasks()
-
-	if err != nil{
-		http.Error(w,err.Error(), http.StatusInternalServerError)
+	if r.URL.Query().Get("search") != "" {
+		search := r.URL.Query().Get("search")
+		claims := auth.GetUserFromContext(r)
+		if claims == nil {
+			http.Error(w, "User not found", http.StatusUnauthorized)
+			return
+		}
+		userID := claims.UserID
+		tasks, err := db.Select_Initial_Tasks_By_Search(search, userID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		json.NewEncoder(w).Encode(tasks)
+		return
+	} else {
+		tasks, err := db.Select_Initial_Tasks()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		json.NewEncoder(w).Encode(tasks)
 		return
 	}
-
-	json.NewEncoder(w).Encode(tasks)
 }
-
-
-func CreateTaskHandler(w http.ResponseWriter, r *http.Request){
+func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	SetHeaders(w)
 
 	if r.Method == http.MethodOptions {
@@ -44,14 +59,14 @@ func CreateTaskHandler(w http.ResponseWriter, r *http.Request){
 
 	var task models.Task
 	err := json.NewDecoder(r.Body).Decode(&task)
-	if err != nil{
-		http.Error(w,"Invalid JSON: " + err.Error(), http.StatusBadRequest)
+	if err != nil {
+		http.Error(w, "Invalid JSON: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = db.InsertData(&task)
-	if err != nil{
-		http.Error(w,err.Error(), http.StatusInternalServerError)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -59,7 +74,7 @@ func CreateTaskHandler(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(task)
 }
 
-func UpdateTaskHandler(w http.ResponseWriter, r *http.Request){
+func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	SetHeaders(w)
 
 	if r.Method == http.MethodOptions {
@@ -69,19 +84,19 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request){
 
 	var task models.Task
 	err := json.NewDecoder(r.Body).Decode(&task)
-	if err != nil{
-		http.Error(w,"Invalid JSON: " + err.Error(), http.StatusBadRequest)
+	if err != nil {
+		http.Error(w, "Invalid JSON: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if task.ID == 0 {
-		http.Error(w,"Task ID is required", http.StatusBadRequest)
+		http.Error(w, "Task ID is required", http.StatusBadRequest)
 		return
 	}
 
 	err = db.UpdateData(&task)
-	if err != nil{
-		http.Error(w,err.Error(), http.StatusInternalServerError)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -89,7 +104,7 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(task)
 }
 
-func DeleteTaskHandler(w http.ResponseWriter, r *http.Request){
+func DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 	SetHeaders(w)
 
 	if r.Method == http.MethodOptions {
@@ -99,28 +114,27 @@ func DeleteTaskHandler(w http.ResponseWriter, r *http.Request){
 
 	var task models.Task
 	err := json.NewDecoder(r.Body).Decode(&task)
-	if err != nil{
-		http.Error(w,"Invalid JSON: " + err.Error(), http.StatusBadRequest)	
+	if err != nil {
+		http.Error(w, "Invalid JSON: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if task.ID == 0 {
-		http.Error(w,"Task ID is required", http.StatusBadRequest)
+		http.Error(w, "Task ID is required", http.StatusBadRequest)
 		return
 	}
 
 	err = db.DeleteData(&task)
-	if err != nil{
-		http.Error(w,err.Error(), http.StatusInternalServerError)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	}	
+	}
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Task deleted successfully"})
 }
 
-
-func TaskHandler(w http.ResponseWriter, r *http.Request){
+func TaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
@@ -136,7 +150,7 @@ func TaskHandler(w http.ResponseWriter, r *http.Request){
 		w.WriteHeader(http.StatusOK)
 		return
 	default:
-		http.Error(w,"Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
