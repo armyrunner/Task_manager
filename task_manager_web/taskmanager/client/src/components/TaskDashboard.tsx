@@ -5,9 +5,6 @@ import {
   CSidebarToggler,
   CNavItem,
   CNavGroup,
-  CButton,
-  CInputGroup,
-  CFormInput,
 } from "@coreui/react";
 
 import CIcon from "@coreui/icons-react";
@@ -19,14 +16,25 @@ import {
   cilPuzzle,
   cilCheckCircle,
   cilSitemap,
-  cilSearch,
   cilHome,
   cilSpreadsheet,
 } from "@coreui/icons";
 import "@coreui/coreui/dist/css/coreui.min.css";
 import styles from "./TaskDashboard.module.css";
 import { useState, useEffect } from "react";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useSearchParams } from "react-router-dom";
+
+interface Task {
+  id: number;
+  description: string;
+  due_date: string;
+  start_date: string;
+  finish_date: string;
+  status: string;
+  category_id: number;
+  category_name: string;
+  notes: string;
+}
 
 const Dashboard = () => {
   const [categories, setCategories] = useState<string[]>([]);
@@ -45,20 +53,11 @@ const Dashboard = () => {
       .catch((err) => console.error(err));
   }, []);
 
+
   return (
     <div className={styles.pageWrapper}>
       <CSidebar className="border-end">
         <CSidebarHeader className="border-bottom">
-          <CInputGroup>
-            <CFormInput
-              type="search"
-              placeholder="Search ID or Description"
-              aria-label="Search"
-            />
-            <CButton type="button" color="primary" variant="outline">
-              <CIcon icon={cilSearch} />
-            </CButton>
-          </CInputGroup>
         </CSidebarHeader>
         <CSidebarNav>
           <CNavItem>
@@ -110,7 +109,7 @@ const Dashboard = () => {
             }
           >
             {categories.map((category: any) => (
-              <CNavItem key={category.id} href="#">
+              <CNavItem key={category.id} to={``}>
                 <span className="nav-icon">
                   <span className="nav-icon-bullet"></span>
                 </span>{" "}
@@ -128,7 +127,10 @@ const Dashboard = () => {
           {/* Need to Add report drop down Initial / Category (possibly sub-category) / Completed Tasks */}
           <CNavItem>
             <Link to="reports" className="nav-link">
-              <CIcon customClassName="nav-icon text-primary" icon={cilSpreadsheet} />{" "}
+              <CIcon
+                customClassName="nav-icon text-primary"
+                icon={cilSpreadsheet}
+              />{" "}
               Print Reports
             </Link>
           </CNavItem>

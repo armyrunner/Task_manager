@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/armyrunner/task_manager/db"
 	"github.com/armyrunner/task_manager/auth"
+	"github.com/armyrunner/task_manager/db"
 	"github.com/armyrunner/task_manager/models"
 )
 
@@ -49,11 +49,42 @@ func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func GetCompletedTasksHandler(w http.ResponseWriter, r *http.Request) {
+	SetHeaders(w)
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	claims := auth.GetUserFromContext(r)
+	if claims == nil {
+		http.Error(w, "User not found", http.StatusUnauthorized)
+		return
+	}
+	userID := claims.UserID
+	tasks, err := db.SelectCompletedTasks(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(tasks)
+}
+
 func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	SetHeaders(w)
 
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// Get userID from JWT claims
+	claims := auth.GetUserFromContext(r)
+	if claims == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -63,6 +94,9 @@ func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid JSON: "+err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	// Set userID from JWT (ignore any userID from request)
+	task.UserID = claims.UserID
 
 	err = db.InsertData(&task)
 	if err != nil {
@@ -82,6 +116,14 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get userID from JWT claims
+	claims := auth.GetUserFromContext(r)
+	if claims == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	userID := claims.UserID
+
 	var task models.Task
 	err := json.NewDecoder(r.Body).Decode(&task)
 	if err != nil {
@@ -94,7 +136,7 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.UpdateData(&task)
+	err = db.UpdateData(&task, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -112,6 +154,14 @@ func DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get userID from JWT claims
+	claims := auth.GetUserFromContext(r)
+	if claims == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	userID := claims.UserID
+
 	var task models.Task
 	err := json.NewDecoder(r.Body).Decode(&task)
 	if err != nil {
@@ -124,7 +174,7 @@ func DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.DeleteData(&task)
+	err = db.DeleteData(&task, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	
+
 	"github.com/armyrunner/task_manager/models"
 )
 
@@ -125,8 +125,8 @@ func InsertData(tks *models.Task) error {
 	return nil
 }
 
-func UpdateData(tks *models.Task) error {
-	stmt, err := DB.Prepare("UPDATE initial_tasks SET category_id = ?, task_description = ?, due_date = ?, start_date = ?, finish_date = ?, status = ?, notes = ? WHERE id = ?")
+func UpdateData(tks *models.Task, userID int) error {
+	stmt, err := DB.Prepare("UPDATE initial_tasks SET category_id = ?, task_description = ?, due_date = ?, start_date = ?, finish_date = ?, status = ?, notes = ? WHERE id = ? AND user_id = ?")
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func UpdateData(tks *models.Task) error {
 		categoryID = tks.CategoryID
 	}
 
-	result, err := stmt.Exec(categoryID, tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, tks.ID)
+	result, err := stmt.Exec(categoryID, tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, tks.Status, tks.Notes, tks.ID, userID)
 	if err != nil {
 		return err
 	}
@@ -153,16 +153,21 @@ func UpdateData(tks *models.Task) error {
 	return nil
 }
 
-func DeleteData(tks *models.Task) error {
-	stmt, err := DB.Prepare("DELETE FROM initial_tasks WHERE id = ?")
+func DeleteData(tks *models.Task, userID int) error {
+	stmt, err := DB.Prepare("DELETE FROM initial_tasks WHERE id = ? AND user_id = ?")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(tks.ID)
+	result, err := stmt.Exec(tks.ID, userID)
 	if err != nil {
 		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("no task found with ID %d for this user", tks.ID)
 	}
 
 	return nil
@@ -286,7 +291,7 @@ func Select_Initial_Tasks_By_Search(search string, userID int) ([]models.Task, e
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query("%" + search + "%", userID)
+	rows, err := stmt.Query("%"+search+"%", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -325,8 +330,9 @@ func Select_Initial_Tasks_By_Search(search string, userID int) ([]models.Task, e
 
 	return tasks, nil
 }
+
 // MoveCompletedTask moves a task from initial_tasks to completed_tasks when status is "complete"
-func MoveCompletedTask(tks *models.Task) error {
+func MoveCompletedTask(tks *models.Task, userID int) error {
 	completedStatus := "Completed"
 
 	// Handle null category_id
@@ -343,13 +349,13 @@ func MoveCompletedTask(tks *models.Task) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(tks.UserID, categoryID, tks.ID, tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, completedStatus, tks.Notes)
+	_, err = stmt.Exec(userID, categoryID, tks.ID, tks.Description, tks.DueDate, tks.StartDate, tks.FinishDate, completedStatus, tks.Notes)
 	if err != nil {
 		return err
 	}
 
 	// Delete from initial_tasks table
-	err = DeleteData(tks)
+	err = DeleteData(tks, userID)
 	if err != nil {
 		return err
 	}
@@ -358,19 +364,20 @@ func MoveCompletedTask(tks *models.Task) error {
 }
 
 // SelectCompletedTasks retrieves all completed tasks
-func SelectCompletedTasks() ([]models.Task, error) {
+func SelectCompletedTasks(userID int) ([]models.Task, error) {
 	stmt, err := DB.Prepare(`
 		SELECT t.id, t.user_id, t.category_id, COALESCE(c.name, '') as category_name,
 		       t.task_id, t.task_description, t.due_date, t.start_date, t.finish_date, t.status, t.notes
 		FROM completed_tasks t
 		LEFT JOIN categories c ON t.category_id = c.id
+		WHERE t.user_id = ?
 	`)
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query()
+	rows, err := stmt.Query(userID)
 	if err != nil {
 		return nil, err
 	}

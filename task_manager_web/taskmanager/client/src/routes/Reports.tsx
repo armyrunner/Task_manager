@@ -6,9 +6,9 @@ import {
   CCardBody,
   CCardHeader,
   CFormLabel,
-  CInputGroup,
   CModal,
   CModalHeader,
+  CSpinner,
 } from "@coreui/react";
 
 import {cilPrint, cilThumbUp } from "@coreui/icons";
@@ -36,43 +36,47 @@ interface Category {
 
 
 function Reports() {
+  // Modal state
   const [showModal, setShowModal] = useState<boolean>(false);
+
+  // Data state
   const [categories, setCategories] = useState<Category[]>([]);
+  const [items, setItems] = useState<Task[]>([]);
+
+  // Selection state
+  const [reportType, setReportType] = useState<string>("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
+
+  // Loading/Error state
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Task[]>([]);
-  const [showSearchModal, setShowSearchModal] = useState<boolean>(false);
-  const [reportType, setReportType] = useState<string>("");
-  const [task, setTask] = useState<Task>({
-    id: 0,
-    description: "",
-    due_date: "",
-    start_date: "",
-    finish_date: "",
-    status: "pending",
-    category_id: 0,
-    category_name: "",
-    notes: "",
-  });
 
-  const columns = [
-    {
-      key: "description",
-      label: "Description",
-      _props: { scope: "col" },
-    },
-  ];
+  const columnConfig: Record<string, string> = {
+    description: "Description",
+    due_date: "Due Date",
+    start_date: "Start Date",
+    finish_date: "Finish Date",
+    status: "Status",
+    category_name: "Category",
+    notes: "Notes",
 
-  const items = [{}];
+  }
+
+  const columns = Object.entries(columnConfig).map(([key, label]) => ({
+    key,
+    label,
+    _props: {scope: "col"},
+  }))
+
 
   //  =======  Fetch categories on component mount ==========
   useEffect(() => {
-    fetchCategories();
+    fetchCategories();    
   }, []);
 
   const fetchCategories = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const response = await fetch("http://localhost:8080/api/categories", {
         method: "GET",
@@ -87,7 +91,77 @@ function Reports() {
       }
     } catch (err) {
       console.error("Error fetching categories:", err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const fetchTasksByCategory = async (categoryID: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`http://localhost:8080/api/tasks?category_id=${categoryID}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  };
+
+  const fetchInitialTasks = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("http://localhost:8080/api/tasks", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+    } catch (err) {
+      console.error("Error fetching initial tasks:", err);
+    }
+  };
+
+  const fetchCompletedTasks = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("http://localhost:8080/api/tasks/completed", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+    } catch (err) {
+      console.error("Error fetching initial tasks:", err);
+    }
+  };
+
+  const fetchAllTasks = async () => {
+    setLoading(true);
+    setError(null);
+    const initial = await fetchInitialTasks();
+    const completed = await fetchCompletedTasks();
+    return [...(initial || []), ...(completed || [])];
   };
 
   // ============= HANDLE OPEN AND CLOSE MODALS
@@ -98,26 +172,45 @@ function Reports() {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setCategories("");
+    setSelectedCategoryId(0);
   };
 
     // ============= HANDLE CHANGE
   
-    const handleChange = (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-      >
-    ) => {
-      const { name, value } = e.target;
-      // Convert category_id to number
-      if (name === "category_id") {
-        setTask((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
-      } else {
-        setTask((prev) => ({ ...prev, [name]: value }));
-      }
+    const handleReportChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selected = e.target.value;
+        setReportType(selected);
+        setItems([]); // Clear previous results
+
+        if (selected === "Category") {
+            handleOpenModal();
+        } else if (selected === "Initial Tasks") {
+            const data = await fetchInitialTasks();
+            setItems(data || []);
+            setLoading(false);
+        } else if (selected === "Completed Tasks") {
+            const data = await fetchCompletedTasks();
+            setItems(data || []);
+            setLoading(false);
+        } else if (selected === "Full Report") {
+            const data = await fetchAllTasks();
+            setItems(data || []);
+            setLoading(false);
+        }
     };
+
+    const handleCategorySelect = async () => {
+        if (selectedCategoryId === 0) return;
+        const data = await fetchTasksByCategory(selectedCategoryId);
+        setItems(data);
+        setShowModal(false);
+        setSelectedCategoryId(0);
+        setLoading(false);
+    }
   return (
     <div className="d-flex justify-content-center align-items-start">
+        {loading && <CSpinner color="success" />}
+        {error && <div className="alert alert-danger">Error: {error}</div>}
       <CCard>
         <CCardHeader>
           <CFormLabel>
@@ -127,17 +220,13 @@ function Reports() {
             id="reports" 
             name="reports"
             value={reportType}
-            onChange={(e) => { 
-                setReportType(e.target.value);
-                if(e.target.value === "Category" ){
-                    handleOpenModal;
-                }
-            }}
+            onChange={handleReportChange}
             >
-            <option>Intial Task</option>
-            <option>Category</option>
-            <option>Completed Task</option>
-            <option>Full Report</option>
+            <option value="">Select a Report</option>
+            <option value="Initial Tasks">Initial Tasks</option>
+            <option value="Category">Category</option>
+            <option value="Completed Tasks">Completed Tasks</option>
+            <option value="Full Report">Full Report</option>
           </CFormSelect>
         </CCardHeader>
         <CCardBody>
@@ -169,8 +258,9 @@ function Reports() {
         <CFormSelect
           id="category_id"
           name="category_id"
-          value={task.category_id}
-          onChange={handleChange}
+          value={selectedCategoryId}
+          onChange={(e) => setSelectedCategoryId(parseInt(e.target.value) || 0)}
+          className="m-3"
         >
           <option value={0}>Select Category</option>
           {categories.map((cat) => (
@@ -179,8 +269,8 @@ function Reports() {
             </option>
           ))}
         </CFormSelect>
-        <CButton color="success">
-            <CIcon icon={cilThumbUp}/>
+        <CButton color="success" onClick={handleCategorySelect} className="m-3">
+            <CIcon icon={cilThumbUp} className="me-2"/>
             OK
         </CButton>
       </CModal>

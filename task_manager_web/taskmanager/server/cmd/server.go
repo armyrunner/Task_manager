@@ -21,7 +21,6 @@ var serverCmd = &cobra.Command{
 		http.HandleFunc("/api/auth/login", auth.LoginHandler)
 		http.HandleFunc("/api/auth/refresh", auth.RefreshHandler)
 		http.HandleFunc("/api/auth/logout", auth.LogoutHandler)
-		http.HandleFunc("/api/auth/reports",auth.ReportsHandler)
 
 		// Task routes (protected with auth middleware)
 		http.HandleFunc("/api/tasks", auth.AuthMiddleware(api.TaskHandler))
@@ -30,14 +29,14 @@ var serverCmd = &cobra.Command{
 		http.HandleFunc("/api/categories", auth.AuthMiddleware(api.CategoryHandler))
 
 		fmt.Println("Server starting on port 8080...")
-		fmt.Println("Auth endpoints:")
-		fmt.Println("  POST /api/auth/register - Register new user")
-		fmt.Println("  POST /api/auth/login    - Login user")
-		fmt.Println("  POST /api/auth/refresh  - Refresh access token")
-		fmt.Println("  POST /api/auth/logout   - Logout user")
-		fmt.Println("Protected endpoints:")
-		fmt.Println("  /api/tasks      - Task CRUD (Requires Authorization: Bearer <token>)")
-		fmt.Println("  /api/categories - Category CRUD (Requires Authorization: Bearer <token>)")
+		// fmt.Println("Auth endpoints:")
+		// fmt.Println("  POST /api/auth/register - Register new user")
+		// fmt.Println("  POST /api/auth/login    - Login user")
+		// fmt.Println("  POST /api/auth/refresh  - Refresh access token")
+		// fmt.Println("  POST /api/auth/logout   - Logout user")
+		// fmt.Println("Protected endpoints:")
+		// fmt.Println("  /api/tasks      - Task CRUD (Requires Authorization: Bearer <token>)")
+		// fmt.Println("  /api/categories - Category CRUD (Requires Authorization: Bearer <token>)")
 
 		err := http.ListenAndServe(":8080", nil)
 		if err != nil {
