@@ -22,19 +22,8 @@ import {
 import "@coreui/coreui/dist/css/coreui.min.css";
 import styles from "./TaskDashboard.module.css";
 import { useState, useEffect } from "react";
-import { Outlet, Link, useSearchParams } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 
-interface Task {
-  id: number;
-  description: string;
-  due_date: string;
-  start_date: string;
-  finish_date: string;
-  status: string;
-  category_id: number;
-  category_name: string;
-  notes: string;
-}
 
 const Dashboard = () => {
   const [categories, setCategories] = useState<string[]>([]);
@@ -109,7 +98,7 @@ const Dashboard = () => {
             }
           >
             {categories.map((category: any) => (
-              <CNavItem key={category.id} to={``}>
+              <CNavItem key={category.id} to={`/taskdashboard?category_id=${category.id}&category_name=${category.name}`}>
                 <span className="nav-icon">
                   <span className="nav-icon-bullet"></span>
                 </span>{" "}

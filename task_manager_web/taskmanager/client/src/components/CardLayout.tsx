@@ -15,7 +15,7 @@ import {
 } from "@coreui/react";
 import styles from "./CardLayout.module.css";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { cilPenAlt } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
 
@@ -38,6 +38,9 @@ function CardLayout() {
   const [error, setError] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [searchParams] = useSearchParams();
+  const categoryID = searchParams.get("category_id");
+  const categoryName = searchParams.get("category_name");
 
   const fetchTasks = async () => {
   setLoading(true);
@@ -98,7 +101,10 @@ function CardLayout() {
     <div className={styles.cardGrid}>
       {loading && <CSpinner color="success" />}
       {error && <div className="alert alert-danger">Error: {error}</div>}
-
+      {categoryName && (
+        <h2 className="text-center" color="primary">
+          {categoryName.toUpperCase()}
+        </h2>)}
       {/* Responsive Grid */}
       <CRow xs={{ cols: 1 }} sm={{ cols: 2 }} md={{ cols: 3 }} lg={{ cols: 4 }} className="g-3">
         {tasks.map((task, index) => (
