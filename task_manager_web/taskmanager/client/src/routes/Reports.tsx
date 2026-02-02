@@ -238,7 +238,10 @@ function Reports() {
             hover
             bordered
           />
-          <CButton>
+          <CButton 
+            color="primary"
+            variant="outline"
+          >
             <CIcon icon={cilPrint} className="me-2" />
             Print
           </CButton>

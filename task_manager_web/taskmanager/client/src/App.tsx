@@ -14,6 +14,7 @@ import AddTask from './routes/AddTask'
 import UpdateTask from './routes/UpdateTask'
 import DeleteTask from './routes/DeleteTask'
 import CardLayout from './components/CardLayout'
+import Reports from './routes/Reports'
 
 //import PageNotFound from './components/PageNotFound'
 
@@ -39,6 +40,7 @@ function App() {
           <Route path='updatetask' element={<UpdateTask/>}/>
           <Route path='deletetask' element={<DeleteTask/>}/>
           <Route index element={<CardLayout/>}/>
+          <Route path='reports' element={<Reports/>}/>
         </Route>
         <Route path='/about' element={<AboutPage/>}/>
         <Route path='/contact' element={<ContactPage/>}/>
