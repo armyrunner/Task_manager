@@ -423,20 +423,20 @@ func SelectCompletedTasks(userID int) ([]models.Task, error) {
 	return tasks, nil
 }
 
-func Select_Initial_Tasks_By_Category(categoryID int) ([]models.Task, error) {
+func Select_Initial_Tasks_By_Category(categoryID, useID int) ([]models.Task, error) {
 	stmt, err := DB.Prepare(`
 		SELECT t.id, t.user_id, t.category_id, COALESCE(c.name, '') as category_name,
 		       t.task_description, t.due_date, t.start_date, t.finish_date, t.status, t.notes
 		FROM initial_tasks t
 		LEFT JOIN categories c ON t.category_id = c.id
-		WHERE t.category_id = ?
+		WHERE t.category_id = ? AND t.user_id = ?
 	`)
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(categoryID)
+	rows, err := stmt.Query(categoryID,useID)
 	if err != nil {
 		return nil, err
 	}

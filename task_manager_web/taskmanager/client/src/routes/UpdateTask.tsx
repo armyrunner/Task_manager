@@ -389,7 +389,7 @@ function UpdateTask() {
               <CIcon icon={cilX} className="me-2" />
               Cancel
             </CButton>
-            <CButton color="primary" type="submit" disabled={loading} onClick={}>
+            <CButton color="primary" type="submit" disabled={loading}>
               <CIcon icon={cilSave} className="me-2" />
               Save Task
             </CButton>

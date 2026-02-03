@@ -25,6 +25,10 @@ var serverCmd = &cobra.Command{
 		// Task routes (protected with auth middleware)
 		http.HandleFunc("/api/tasks", auth.AuthMiddleware(api.TaskHandler))
 
+		// Get Completed tasks from 
+		http.HandleFunc("/api/tasks/completed",auth.AuthMiddleware(api.GetCompletedTasksHandler))
+		
+
 		// Category routes (protected with auth middleware)
 		http.HandleFunc("/api/categories", auth.AuthMiddleware(api.CategoryHandler))
 

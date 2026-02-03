@@ -9,10 +9,10 @@ import "github.com/golang-jwt/jwt/v5"
 // Task represents a task in the system
 type Task struct {
 	ID           int    `json:"id"`
-	UserID       int    `json:"user_id,omitempty"`
-	OriginalID   int    `json:"original_id,omitempty"`
-	CategoryID   int    `json:"category_id,omitempty"`
-	CategoryName string `json:"category_name,omitempty"` // For display purposes (joined from categories table)
+	UserID       int    `json:"user_id"`
+	OriginalID   int    `json:"original_id"`
+	CategoryID   int    `json:"category_id"`
+	CategoryName string `json:"category_name"` // For display purposes (joined from categories table)
 	Description  string `json:"description"`
 	DueDate      string `json:"due_date"`
 	StartDate    string `json:"start_date"`
@@ -30,7 +30,7 @@ type Category struct {
 	ID        int    `json:"id"`
 	UserID    int    `json:"user_id"`
 	Name      string `json:"name"`
-	CreatedAt string `json:"created_at,omitempty"`
+	CreatedAt string `json:"created_at"`
 }
 
 // =============================================================================
@@ -43,8 +43,8 @@ type User struct {
 	Username     string `json:"username"`
 	Email        string `json:"email"`
 	PasswordHash string `json:"-"` // Never send password hash to client
-	CreatedAt    string `json:"created_at,omitempty"`
-	UpdatedAt    string `json:"updated_at,omitempty"`
+	CreatedAt    string `json:"created_at"`
+	UpdatedAt    string `json:"updated_at"`
 }
 
 // =============================================================================

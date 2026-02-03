@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/armyrunner/task_manager/auth"
 	"github.com/armyrunner/task_manager/db"
@@ -33,6 +34,27 @@ func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		userID := claims.UserID
 		tasks, err := db.Select_Initial_Tasks_By_Search(search, userID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		json.NewEncoder(w).Encode(tasks)
+		return
+	} else if r.URL.Query().Get("category_id") != ""{
+		catIDstr := r.URL.Query().Get("category_id")
+		catID, err := strconv.Atoi(catIDstr)
+		if err != nil {
+			http.Error(w, "Invalid category ID", http.StatusBadRequest)
+			return
+		}
+		claims := auth.GetUserFromContext(r)
+		if claims == nil {
+			http.Error(w, "User not found", http.StatusUnauthorized)
+			return
+		}
+		userID := claims.UserID
+
+		tasks, err := db.Select_Initial_Tasks_By_Category(catID, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -136,11 +158,22 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.UpdateData(&task, userID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if task.Status == "completed"{
+
+		err = db.MoveCompletedTask(&task, userID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else {
+
+		err = db.UpdateData(&task, userID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
+
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(task)
@@ -336,6 +369,7 @@ func DeleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Category deleted successfully"})
 }
+
 
 func CategoryHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {

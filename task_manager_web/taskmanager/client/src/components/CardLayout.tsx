@@ -43,41 +43,76 @@ function CardLayout() {
   const categoryName = searchParams.get("category_name");
 
   const fetchTasks = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const response = await fetch("http://localhost:8080/api/tasks", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-    });
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch("http://localhost:8080/api/tasks", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
 
-    const data = await response.json();
-    console.log("Fetched tasks:", data); // <--- check what you actually got
+      const data = await response.json();
+      console.log("Fetched tasks:", data); // <--- check what you actually got
 
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to fetch tasks");
-    }
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to fetch tasks");
+      }
 
-    // Ensure tasks is an array
-    if (Array.isArray(data)) {
-      setTasks(data);
-    } else {
-      console.warn("Tasks API did not return an array:", data);
+      // Ensure tasks is an array
+      if (Array.isArray(data)) {
+        setTasks(data);
+      } else {
+        console.warn("Tasks API did not return an array:", data);
+        setTasks([]);
+      }
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      setError("Failed to fetch tasks. Please try again.");
       setTasks([]);
+    } finally {
+      setLoading(false);
     }
+  };
 
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    setError("Failed to fetch tasks. Please try again.");
-    setTasks([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  const fetchTasksByCategory = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/tasks?category_id${categoryID}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
 
+      const data = await response.json();
+      console.log("Fetched tasks:", data); // <--- check what you actually got
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to fetch tasks");
+      }
+
+      // Ensure tasks is an array
+      if (Array.isArray(data)) {
+        setTasks(data);
+      } else {
+        console.warn("Tasks API did not return an array:", data);
+        setTasks([]);
+      }
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      setError("Failed to fetch tasks. Please try again.");
+      setTasks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchTasks();
@@ -104,9 +139,16 @@ function CardLayout() {
       {categoryName && (
         <h2 className="text-center" color="primary">
           {categoryName.toUpperCase()}
-        </h2>)}
+        </h2>
+      )}
       {/* Responsive Grid */}
-      <CRow xs={{ cols: 1 }} sm={{ cols: 2 }} md={{ cols: 3 }} lg={{ cols: 4 }} className="g-3">
+      <CRow
+        xs={{ cols: 1 }}
+        sm={{ cols: 2 }}
+        md={{ cols: 3 }}
+        lg={{ cols: 4 }}
+        className="g-3"
+      >
         {tasks.map((task, index) => (
           <CCol key={task.id || index}>
             <CCard
@@ -114,12 +156,18 @@ function CardLayout() {
               onClick={() => handleCardClick(task)}
             >
               <CCardBody className={styles.cardBody}>
-                <CCardTitle className="border-bottom">{task.description}</CCardTitle>
+                <CCardTitle className="border-bottom">
+                  {task.description}
+                </CCardTitle>
                 <CCardText>
-                  <strong>Due Date:</strong> {task.due_date}<br />
-                  <strong>Start Date:</strong> {task.start_date}<br />
-                  <strong>Status:</strong> {task.status}<br />
-                  <strong>Category:</strong> {task.category_name}<br />
+                  <strong>Due Date:</strong> {task.due_date}
+                  <br />
+                  <strong>Start Date:</strong> {task.start_date}
+                  <br />
+                  <strong>Status:</strong> {task.status}
+                  <br />
+                  <strong>Category:</strong> {task.category_name}
+                  <br />
                 </CCardText>
               </CCardBody>
             </CCard>
@@ -133,13 +181,27 @@ function CardLayout() {
           <CModalTitle>{selectedCard?.description}</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          <p><strong>Description:</strong> {selectedCard?.description}</p>
-          <p><strong>Due Date:</strong> {selectedCard?.due_date}</p>
-          <p><strong>Start Date:</strong> {selectedCard?.start_date}</p>
-          <p><strong>Finish Date:</strong> {selectedCard?.finish_date}</p>
-          <p><strong>Status:</strong> {selectedCard?.status}</p>
-          <p><strong>Notes:</strong> {selectedCard?.notes}</p>
-          <p><strong>Category:</strong> {selectedCard?.category_name}</p>
+          <p>
+            <strong>Description:</strong> {selectedCard?.description}
+          </p>
+          <p>
+            <strong>Due Date:</strong> {selectedCard?.due_date}
+          </p>
+          <p>
+            <strong>Start Date:</strong> {selectedCard?.start_date}
+          </p>
+          <p>
+            <strong>Finish Date:</strong> {selectedCard?.finish_date}
+          </p>
+          <p>
+            <strong>Status:</strong> {selectedCard?.status}
+          </p>
+          <p>
+            <strong>Notes:</strong> {selectedCard?.notes}
+          </p>
+          <p>
+            <strong>Category:</strong> {selectedCard?.category_name}
+          </p>
         </CModalBody>
         <CModalFooter>
           <CButton onClick={handleUpdateTask} color="primary" variant="outline">

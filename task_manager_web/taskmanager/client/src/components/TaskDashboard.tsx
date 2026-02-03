@@ -5,6 +5,7 @@ import {
   CSidebarToggler,
   CNavItem,
   CNavGroup,
+  CSpinner
 } from "@coreui/react";
 
 import CIcon from "@coreui/icons-react";
@@ -28,23 +29,41 @@ import { Outlet, Link } from "react-router-dom";
 const Dashboard = () => {
   const [categories, setCategories] = useState<string[]>([]);
 
+  // Loading/Error state
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    // Fetch categories when component mounts
-    fetch("http://localhost:8080/api/categories", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => setCategories(data))
-      .catch((err) => console.error(err));
+    fetchCategories();    
   }, []);
+
+  const fetchCategories = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("http://localhost:8080/api/categories", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data || []);
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return (
     <div className={styles.pageWrapper}>
+      {loading && <CSpinner color="success" />}
+      {error && <div className="alert alert-danger">Error: {error}</div>}
       <CSidebar className="border-end">
         <CSidebarHeader className="border-bottom">
         </CSidebarHeader>
@@ -100,7 +119,6 @@ const Dashboard = () => {
             {categories.map((category: any) => (
               <CNavItem key={category.id} to={`/taskdashboard?category_id=${category.id}&category_name=${category.name}`}>
                 <span className="nav-icon">
-                  <span className="nav-icon-bullet"></span>
                 </span>{" "}
                 {category.name}
               </CNavItem>
