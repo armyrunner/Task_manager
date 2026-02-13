@@ -24,6 +24,7 @@ import "@coreui/coreui/dist/css/coreui.min.css";
 import styles from "./TaskDashboard.module.css";
 import { useState, useEffect } from "react";
 import { Outlet, Link } from "react-router-dom";
+import { NavItem } from "react-bootstrap";
 
 const Dashboard = () => {
   const [categories, setCategories] = useState<string[]>([]);
@@ -100,7 +101,7 @@ const Dashboard = () => {
           </CNavItem>
           <CNavItem>
             <Link to="alltasks"  className="nav-link">
-              <CIcon customClassName="nav-icon text-info" icon={cilPuzzle} />
+              <CIcon customClassName="nav-icon text-info" icon={cilPuzzle} />{" "}
               All Tasks
             </Link>
           </CNavItem>
@@ -119,21 +120,21 @@ const Dashboard = () => {
               <Link
                 key={category.id}
                 to={`/taskdashboard?category_id=${category.id}&category_name=${category.name}`}
+                className="nav-link"
               >
-                <span className="nav-icon">
-                  <span className="nav-icon-bullet"></span>
-                </span>{" "}
-                {category.name}
+                <span className="nav-icon"></span>{category.name}
               </Link>
             ))}
           </CNavGroup>
-          <Link to="completed">
+          <NavItem>
+          <Link to="completedtasks" className="nav-link">
             <CIcon
               customClassName="nav-icon text-success"
               icon={cilCheckCircle}
-            />
+            />{" "}
             Completed Tasks
           </Link>
+          </NavItem>
           {/* Need to Add report drop down Initial / Category (possibly sub-category) / Completed Tasks */}
           <CNavItem>
             <Link to="reports" className="nav-link">
