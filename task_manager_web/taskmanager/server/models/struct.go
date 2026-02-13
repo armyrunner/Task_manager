@@ -60,6 +60,7 @@ type RegisterRequest struct {
 
 // LoginRequest is the request body for user login
 type LoginRequest struct {
+	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }

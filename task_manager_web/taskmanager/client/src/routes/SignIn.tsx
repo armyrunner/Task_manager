@@ -6,7 +6,7 @@ import styles from "./SignIn.module.css";
 import { useAuth } from "../components/useAuth";
 
 interface LoginCredentials {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -14,7 +14,7 @@ interface LoginCredentials {
 function SignIn() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading,setloading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,8 +26,8 @@ function SignIn() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !password){
-      setError('Email or Password is invalid!!');
+    if (!username || !password){
+      setError('Username or Password is invalid!!');
       return;
     }
 
@@ -35,7 +35,7 @@ function SignIn() {
     setError(null);
 
     try{
-      const credentials: LoginCredentials = {email, password};
+      const credentials: LoginCredentials = {username, password};
 
       const resp = await fetch('http://localhost:8080/api/auth/login',{
         method: 'POST',
@@ -85,11 +85,11 @@ function SignIn() {
             )}
             <div className="input-group mb-3">
               <input
-                type="email"
-                placeholder="Email"
+                type="username"
+                placeholder="Username"
                 className="form-control form-control-lg bg-light fs-6"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 disabled={loading}
               ></input>
             </div>

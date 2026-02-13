@@ -78,12 +78,12 @@ function CardLayout() {
     }
   };
 
-  const fetchTasksByCategory = async () => {
+  const fetchTasksByCategory = async (categoryID: number) => {
     setLoading(true);
     setError(null);
     
     try {
-      const response = await fetch(`http://localhost:8080/api/tasks?category_id${categoryID}`, {
+      const response = await fetch(`http://localhost:8080/api/tasks?category_id=${categoryID}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -115,8 +115,12 @@ function CardLayout() {
   };
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if(categoryID){
+      fetchTasksByCategory(parseInt(categoryID));
+    } else{
+      fetchTasks();
+    }
+  }, [searchParams]);
 
   const handleCardClick = (task: Task) => {
     setSelectedCard(task);

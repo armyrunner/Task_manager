@@ -5,7 +5,7 @@ import {
   CSidebarToggler,
   CNavItem,
   CNavGroup,
-  CSpinner
+  CSpinner,
 } from "@coreui/react";
 
 import CIcon from "@coreui/icons-react";
@@ -25,7 +25,6 @@ import styles from "./TaskDashboard.module.css";
 import { useState, useEffect } from "react";
 import { Outlet, Link } from "react-router-dom";
 
-
 const Dashboard = () => {
   const [categories, setCategories] = useState<string[]>([]);
 
@@ -34,7 +33,7 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchCategories();    
+    fetchCategories();
   }, []);
 
   const fetchCategories = async () => {
@@ -59,17 +58,15 @@ const Dashboard = () => {
     }
   };
 
-
   return (
     <div className={styles.pageWrapper}>
       {loading && <CSpinner color="success" />}
       {error && <div className="alert alert-danger">Error: {error}</div>}
       <CSidebar className="border-end">
-        <CSidebarHeader className="border-bottom">
-        </CSidebarHeader>
+        <CSidebarHeader className="border-bottom"></CSidebarHeader>
         <CSidebarNav>
           <CNavItem>
-            <Link to="taskdashboard" className="nav-link">
+            <Link to="" className="nav-link">
               <CIcon customClassName="nav-icon text-primary" icon={cilHome} />{" "}
               Dashboard
             </Link>
@@ -101,9 +98,11 @@ const Dashboard = () => {
               Delete Task
             </Link>
           </CNavItem>
-          <CNavItem href="#">
-            <CIcon customClassName="nav-icon text-info" icon={cilPuzzle} />
-            All Tasks
+          <CNavItem>
+            <Link to="alltasks"  className="nav-link">
+              <CIcon customClassName="nav-icon text-info" icon={cilPuzzle} />
+              All Tasks
+            </Link>
           </CNavItem>
           <CNavGroup
             toggler={
@@ -117,20 +116,24 @@ const Dashboard = () => {
             }
           >
             {categories.map((category: any) => (
-              <CNavItem key={category.id} to={`/taskdashboard?category_id=${category.id}&category_name=${category.name}`}>
+              <Link
+                key={category.id}
+                to={`/taskdashboard?category_id=${category.id}&category_name=${category.name}`}
+              >
                 <span className="nav-icon">
+                  <span className="nav-icon-bullet"></span>
                 </span>{" "}
                 {category.name}
-              </CNavItem>
+              </Link>
             ))}
           </CNavGroup>
-          <CNavItem href="#">
+          <Link to="completed">
             <CIcon
               customClassName="nav-icon text-success"
               icon={cilCheckCircle}
             />
             Completed Tasks
-          </CNavItem>
+          </Link>
           {/* Need to Add report drop down Initial / Category (possibly sub-category) / Completed Tasks */}
           <CNavItem>
             <Link to="reports" className="nav-link">

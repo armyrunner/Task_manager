@@ -11,6 +11,7 @@ import {
   CCardHeader,
   CCardBody,
   CCardFooter,
+  CCardTitle,
 } from "@coreui/react";
 import {
   CModal,
@@ -221,7 +222,7 @@ function AddTask() {
     <div className="d-flex justify-content-center align-items-start w-100 h-100 pt-4">
       <CCard style={{ maxWidth: "600px", width: "100%" }}>
         <CCardHeader>
-          <strong>Add New Task</strong>
+          <CCardTitle>Add New Task</CCardTitle>
         </CCardHeader>
 
         <CForm onSubmit={handleSubmit}>

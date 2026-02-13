@@ -173,6 +173,7 @@ function Reports() {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedCategoryId(0);
+    setReportType("")
   };
 
     // ============= HANDLE CHANGE
@@ -241,6 +242,7 @@ function Reports() {
           <CButton 
             color="primary"
             variant="outline"
+            onClick={() => window.print()}
           >
             <CIcon icon={cilPrint} className="me-2" />
             Print

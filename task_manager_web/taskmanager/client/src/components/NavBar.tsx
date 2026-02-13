@@ -69,7 +69,7 @@ function NavBar({ title}: Props) {
 
           {/* Right side button */}
           <div className="d-flex">
-            {isLoggedIn && <span className="nav-link">Welcome, {user?.email}</span>}
+            {isLoggedIn && <span className="nav-link">Welcome, {user?.username}</span>}
             <button
               onClick={handleAuthClick}
               className={`btn ${

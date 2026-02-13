@@ -15,12 +15,14 @@ import UpdateTask from './routes/UpdateTask'
 import DeleteTask from './routes/DeleteTask'
 import CardLayout from './components/CardLayout'
 import Reports from './routes/Reports'
+import AllTasks from './routes/AllTasks'
 
 //import PageNotFound from './components/PageNotFound'
 
 
 
 import './App.css'
+import CompletedTasks from './routes/CompletedTasks';
 
 function App() {
 
@@ -39,6 +41,8 @@ function App() {
           <Route path='addtask' element={<AddTask/>}/>
           <Route path='updatetask' element={<UpdateTask/>}/>
           <Route path='deletetask' element={<DeleteTask/>}/>
+          <Route path='alltasks' element={<AllTasks/>}/>
+          <Route path='completedtasks' element={<CompletedTasks/>}/>
           <Route index element={<CardLayout/>}/>
           <Route path='reports' element={<Reports/>}/>
         </Route>
