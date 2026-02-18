@@ -32,6 +32,9 @@ var serverCmd = &cobra.Command{
 		// Category routes (protected with auth middleware)
 		http.HandleFunc("/api/categories", auth.AuthMiddleware(api.CategoryHandler))
 
+		//Routes for reports
+		http.HandleFunc("/api/reports?type=...",auth.AuthMiddleware(api.ReportHandler))
+
 		fmt.Println("Server starting on port 8080...")
 		// fmt.Println("Auth endpoints:")
 		// fmt.Println("  POST /api/auth/register - Register new user")

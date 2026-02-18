@@ -225,19 +225,20 @@ func SelectData(tks *models.Task) ([]models.Task, error) {
 	return tasks, nil
 }
 
-func Select_Initial_Tasks() ([]models.Task, error) {
+func Select_Initial_Tasks(userID int) ([]models.Task, error) {
 	stmt, err := DB.Prepare(`
 		SELECT t.id, t.user_id, t.category_id, COALESCE(c.name, '') as category_name,
 		       t.task_description, t.due_date, t.start_date, t.finish_date, t.status, t.notes
 		FROM initial_tasks t
 		LEFT JOIN categories c ON t.category_id = c.id
+		WHERE t.user_id = ?
 	`)
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query()
+	rows, err := stmt.Query(userID)
 	if err != nil {
 		return nil, err
 	}

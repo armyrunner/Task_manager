@@ -1,62 +1,68 @@
 package services
 
 import (
+	"io"
+	"strings"
+
 	"github.com/armyrunner/task_manager/models"
 	"github.com/jung-kurt/gofpdf"
-	"strings"
 )
 
-func PDF_Initial_Tasks(task_incomplete map[string][]models.Task, task_completed []models.Task, file_name string) error {
+func setupPDF() *gofpdf.Fpdf{
 	pdf := gofpdf.New("L", "mm", "Letter", "")
 	pdf.AddPage()
 	pdf.SetFont("Arial", "B", 16)
 
-	// Title
-	pdf.Cell(40, 10, "Task Report")
-	pdf.Ln(12)
+	return pdf
+}
+
+func addTitle(pdf *gofpdf.Fpdf,title string){
 	
-
-	// Current Tasks
-	// pdf.SetFont("Arial", "B", 14)
-	// pdf.Cell(40, 10, "Current Tasks")
-	// pdf.Ln(10)
-
-	if len(task_incomplete) == 0 {
-		pdf.Cell(40, 10, "There are no current tasks to display")
-	} else {
-		for _, category := range models.CategoryOrder {	
-			pdf.SetFont("Arial", "B", 14)
-			pdf.Cell(40, 10, " *** "+strings.ToUpper(category)+" TASKS *** ")
-			pdf.Ln(12)
-			if len(task_incomplete[category]) == 0 {
-				pdf.Ln(12)
-				pdf.Cell(40, 10, "There are no "+strings.ToLower(category)+" tasks to display")
-				pdf.Ln(12)
-
-			} else {
-				addTaskTable(pdf, task_incomplete[category])
-				pdf.AddPage()
-			}
-		}
-	}
-
-	// Add some space before Completed Tasks
-	pdf.AddPage()
-	//pdf.Ln(10) // Add some spacing instead of a full page break
-
-	// Completed Tasks
+	// Title
 	pdf.SetFont("Arial", "B", 14)
-	pdf.Cell(40, 10, "Completed Tasks")
-	pdf.Ln(10)
+	pdf.Cell(40, 10, title)
+	pdf.Ln(12)
 
-	pdf.SetFont("Arial", "", 12)
-	if len(task_completed) == 0 {
-		pdf.Cell(40, 10, "There are no completed tasks to display")
-		pdf.Ln(12)
-	} else {
-		addTaskTable(pdf, task_completed)
+}
+
+func addCategory(pdf *gofpdf.Fpdf,categoryName string){
+	
+	pdf.SetFont("Arial", "B", 14)
+	pdf.Cell(40, 10, " *** "+strings.ToUpper(categoryName)+" TASKS *** ")
+	pdf.Ln(12)
+
+}
+
+func addNoDataMessage(pdf *gofpdf.Fpdf, message string){
+
+	pdf.SetFont("Arial", "", 14)
+	pdf.Cell(40, 10, message)
+	pdf.Ln(12)
+}
+
+
+func GenerateReport(reportType, categoryName string, tasks []models.Task,w io.Writer) error {
+
+	pdf := setupPDF()
+
+	switch reportType {
+	case "initial":
+		addTitle(pdf,"Initial Tasks Report!")
+	case "completed":
+		addTitle(pdf,"Completed Tasks Report!")
+	case "category":
+		addCategory(pdf, categoryName)
+	case "full":
+		addTitle(pdf, "Full Tasks Report!")
 	}
-	return pdf.OutputFileAndClose(file_name)
+	
+	if len(tasks) == 0 {
+		addNoDataMessage(pdf, "There are no tasks to display")
+	} else{
+		addTaskTable(pdf,tasks)
+	}
+
+	return pdf.Output(w)
 }
 
 func addTaskTable(pdf *gofpdf.Fpdf, task []models.Task) {

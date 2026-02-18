@@ -208,6 +208,15 @@ function Reports() {
         setSelectedCategoryId(0);
         setLoading(false);
     }
+
+    const handlePrintPDF = () =>{
+      let url = `http://localhost:8080/api/reports/pdf?type=${reportType.toLocaleLowerCase().replace(" ","_")}`
+      if(reportType === "Category"){
+        url += `&category_id=${selectedCategoryId}&category_name=${...}`;
+      }
+      window.open(url,'_blank')
+    }
+
   return (
     <div className="d-flex justify-content-center align-items-start">
         {loading && <CSpinner color="success" />}
@@ -242,7 +251,7 @@ function Reports() {
           <CButton 
             color="primary"
             variant="outline"
-            onClick={() => window.print()}
+            onClick={handlePrintPDF}
           >
             <CIcon icon={cilPrint} className="me-2" />
             Print

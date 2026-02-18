@@ -72,7 +72,7 @@ const Dashboard = () => {
               Dashboard
             </Link>
           </CNavItem>
-          <CNavItem>
+          {/* <CNavItem>
             <Link to="addcategory" className="nav-link">
               <CIcon
                 customClassName="nav-icon text-primary"
@@ -80,7 +80,7 @@ const Dashboard = () => {
               />
               Add Category
             </Link>
-          </CNavItem>
+          </CNavItem> */}
           <CNavItem>
             <Link to="addtask" className="nav-link">
               <CIcon customClassName="nav-icon text-primary" icon={cilPlus} />{" "}

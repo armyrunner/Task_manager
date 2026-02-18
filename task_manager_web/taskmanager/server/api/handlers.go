@@ -8,6 +8,7 @@ import (
 	"github.com/armyrunner/task_manager/auth"
 	"github.com/armyrunner/task_manager/db"
 	"github.com/armyrunner/task_manager/models"
+	"github.com/armyrunner/task_manager/services"
 )
 
 func SetHeaders(w http.ResponseWriter) {
@@ -20,6 +21,13 @@ func SetHeaders(w http.ResponseWriter) {
 func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 	SetHeaders(w)
 
+	claims := auth.GetUserFromContext(r)
+	if claims == nil {
+		http.Error(w, "User not found", http.StatusUnauthorized)
+		return
+	}
+	userID := claims.UserID
+
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
@@ -27,12 +35,6 @@ func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Query().Get("search") != "" {
 		search := r.URL.Query().Get("search")
-		claims := auth.GetUserFromContext(r)
-		if claims == nil {
-			http.Error(w, "User not found", http.StatusUnauthorized)
-			return
-		}
-		userID := claims.UserID
 		tasks, err := db.Select_Initial_Tasks_By_Search(search, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -47,12 +49,6 @@ func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid category ID", http.StatusBadRequest)
 			return
 		}
-		claims := auth.GetUserFromContext(r)
-		if claims == nil {
-			http.Error(w, "User not found", http.StatusUnauthorized)
-			return
-		}
-		userID := claims.UserID
 
 		tasks, err := db.Select_Initial_Tasks_By_Category(catID, userID)
 		if err != nil {
@@ -62,7 +58,7 @@ func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(tasks)
 		return
 	} else {
-		tasks, err := db.Select_Initial_Tasks()
+		tasks, err := db.Select_Initial_Tasks(userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -388,4 +384,61 @@ func CategoryHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+
+
+func ReportHandler(w http.ResponseWriter, r *http.Request){
+	//Set headers for PDF Download
+	
+	reportType := r.URL.Query().Get("type");
+	categoryName := r.URL.Query().Get("category_name")
+	categoryID,_ := strconv.Atoi(r.URL.Query().Get("category_id"))
+	
+	//Fetch relevant tasks for DB with userID
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	
+	claims := auth.GetUserFromContext(r)
+	if claims == nil {
+		http.Error(w, "User not found", http.StatusUnauthorized)
+		return
+	}
+	userID := claims.UserID
+	
+	var tasks []models.Task
+	var err error
+	
+	switch reportType{
+	case "Initial Tasks":
+		tasks, err = db.Select_Initial_Tasks(userID)
+	case "Completed Tasks":
+		tasks, err = db.SelectCompletedTasks(userID)
+	case "Category":
+		tasks, err = db.Select_Initial_Tasks_By_Category(categoryID,userID)
+	case "Full Report":
+		initial_tasks, err := db.Select_Initial_Tasks(userID)
+		if err!=nil{
+			http.Error(w, err.Error(),http.StatusInternalServerError)
+			return
+		}
+		completed_tasks, err := db.SelectCompletedTasks(userID)
+		if err!=nil{
+			http.Error(w, err.Error(),http.StatusInternalServerError)
+			return
+		}
+		tasks = append(initial_tasks,completed_tasks...)
+	}
+	
+	if err!=nil{
+		http.Error(w, err.Error(),http.StatusInternalServerError)
+		return
+	}
+	
+	w.Header().Set("Content-Type","application/pdf")
+	w.Header().Set("Content-Disposition","attachment; filename=report.pdf")
+
+	services.GenerateReport(reportType,categoryName,tasks,w)
 }
