@@ -8,6 +8,8 @@ import {
   CFormLabel,
   CModal,
   CModalHeader,
+  CModalBody,
+  CModalFooter,
   CSpinner,
 } from "@coreui/react";
 
@@ -279,29 +281,35 @@ function Reports() {
         <CModalHeader>
           <strong>Choose a category</strong>
         </CModalHeader>
-        <CFormSelect
-          id="category_id"
-          name="category_id"
-          value={selectedCategoryId}
-          onChange={(e) => {
-            const id = parseInt(e.target.value) || 0;
-            setSelectedCategoryId(id);
-            const cat = categories.find(c => c.id === id);
-            setSelectedCategoryName(cat?.name || "");
-          }}
-          className="m-3"
-        >
-          <option value={0}>Select Category</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
-        </CFormSelect>
-        <CButton color="success" onClick={handleCategorySelect} className="m-3">
+        <CModalBody>
+          <CFormSelect
+            id="category_id"
+            name="category_id"
+            value={selectedCategoryId}
+            onChange={(e) => {
+              const id = parseInt(e.target.value) || 0;
+              setSelectedCategoryId(id);
+              const cat = categories.find(c => c.id === id);
+              setSelectedCategoryName(cat?.name || "");
+            }}
+          >
+            <option value={0}>Select Category</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </CFormSelect>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="success" onClick={handleCategorySelect}>
             <CIcon icon={cilThumbUp} className="me-2"/>
             OK
-        </CButton>
+          </CButton>
+          <CButton color="secondary" onClick={handleCloseModal}>
+            Cancel
+          </CButton>
+        </CModalFooter>
       </CModal>
     </div>
   );

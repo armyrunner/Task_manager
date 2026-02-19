@@ -33,7 +33,7 @@ var serverCmd = &cobra.Command{
 		http.HandleFunc("/api/categories", auth.AuthMiddleware(api.CategoryHandler))
 
 		//Routes for reports
-		http.HandleFunc("/api/reports?type=...",auth.AuthMiddleware(api.ReportHandler))
+		http.HandleFunc("/api/reports", auth.AuthMiddleware(api.ReportHandler))
 
 		fmt.Println("Server starting on port 8080...")
 		// fmt.Println("Auth endpoints:")
