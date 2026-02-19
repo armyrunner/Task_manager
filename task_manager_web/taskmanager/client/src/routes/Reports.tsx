@@ -113,9 +113,15 @@ function Reports() {
       if (response.ok) {
         const data = await response.json();
         return data;
+      } else {
+        console.error("Error response:", response.status);
+        return [];
       }
     } catch (err) {
-      console.error("Error fetching categories:", err);
+      console.error("Error fetching tasks by category:", err);
+      return [];
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -206,14 +212,16 @@ function Reports() {
     };
 
     const handleCategorySelect = async () => {
-        if (selectedCategoryId === 0) return;
+        if (selectedCategoryId === 0) {
+          setError("Please select a category");
+          return;
+        }
+        setShowModal(false);
         const data = await fetchTasksByCategory(selectedCategoryId);
         setItems(data || []);
-        setShowModal(false);
-        setLoading(false);
     }
 
-    const handlePrintPDF = () => {
+    const handlePrintPDF = async () => {
       const typeMap: Record<string, string> = {
         "Initial Tasks": "initial",
         "Completed Tasks": "completed",
@@ -222,11 +230,39 @@ function Reports() {
       };
       const backendType = typeMap[reportType] || "";
       
+      if (!backendType) {
+        setError("Please select a report type first");
+        return;
+      }
+
       let url = `http://localhost:8080/api/reports?type=${backendType}`;
       if (reportType === "Category" && selectedCategoryId > 0) {
         url += `&category_id=${selectedCategoryId}&category_name=${encodeURIComponent(selectedCategoryName)}`;
       }
-      window.open(url, '_blank');
+
+      setLoading(true);
+      try {
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const pdfUrl = window.URL.createObjectURL(blob);
+          window.open(pdfUrl, '_blank');
+        } else {
+          const errorText = await response.text();
+          setError(`Failed to generate PDF: ${errorText}`);
+        }
+      } catch (err) {
+        console.error("Error generating PDF:", err);
+        setError("Error generating PDF");
+      } finally {
+        setLoading(false);
+      }
     }
 
   return (
