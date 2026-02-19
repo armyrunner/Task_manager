@@ -412,24 +412,27 @@ func ReportHandler(w http.ResponseWriter, r *http.Request){
 	var err error
 	
 	switch reportType{
-	case "Initial Tasks":
+	case "initial":
 		tasks, err = db.Select_Initial_Tasks(userID)
-	case "Completed Tasks":
+	case "completed":
 		tasks, err = db.SelectCompletedTasks(userID)
-	case "Category":
-		tasks, err = db.Select_Initial_Tasks_By_Category(categoryID,userID)
-	case "Full Report":
-		initial_tasks, err := db.Select_Initial_Tasks(userID)
-		if err!=nil{
-			http.Error(w, err.Error(),http.StatusInternalServerError)
+	case "category":
+		tasks, err = db.Select_Initial_Tasks_By_Category(categoryID, userID)
+	case "full":
+		initialTasks, err := db.Select_Initial_Tasks(userID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		completed_tasks, err := db.SelectCompletedTasks(userID)
-		if err!=nil{
-			http.Error(w, err.Error(),http.StatusInternalServerError)
+		completedTasks, err := db.SelectCompletedTasks(userID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		tasks = append(initial_tasks,completed_tasks...)
+		tasks = append(initialTasks, completedTasks...)
+	default:
+		http.Error(w, "Invalid report type", http.StatusBadRequest)
+		return
 	}
 	
 	if err!=nil{

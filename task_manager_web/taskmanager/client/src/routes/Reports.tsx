@@ -181,10 +181,15 @@ function Reports() {
 
   const handleCloseModal = () => {
     setShowModal(false);
+  };
+
+  const handleClearReport = () => {
+    setShowModal(false);
     setSelectedCategoryId(0);
     setSelectedCategoryName("");
     setReportType("");
     setItems([]);
+    setError(null);
   };
 
     // ============= HANDLE CHANGE
@@ -307,9 +312,9 @@ function Reports() {
           <CButton
             color="warning"
             variant="outline"
-            onClick={handleCloseModal}
+            onClick={handleClearReport}
           >
-            Cancel
+            Clear
           </CButton>
         </CCardBody>
       </CCard>
