@@ -46,6 +46,7 @@ function Reports() {
   // Selection state
   const [reportType, setReportType] = useState<string>("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string>("");
 
   // Loading/Error state
   const [loading, setLoading] = useState<boolean>(false);
@@ -173,7 +174,9 @@ function Reports() {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedCategoryId(0);
-    setReportType("")
+    setSelectedCategoryName("");
+    setReportType("");
+    setItems([]);
   };
 
     // ============= HANDLE CHANGE
@@ -203,18 +206,25 @@ function Reports() {
     const handleCategorySelect = async () => {
         if (selectedCategoryId === 0) return;
         const data = await fetchTasksByCategory(selectedCategoryId);
-        setItems(data);
+        setItems(data || []);
         setShowModal(false);
-        setSelectedCategoryId(0);
         setLoading(false);
     }
 
-    const handlePrintPDF = () =>{
-      let url = `http://localhost:8080/api/reports/pdf?type=${reportType.toLocaleLowerCase().replace(" ","_")}`
-      if(reportType === "Category"){
-        url += `&category_id=${selectedCategoryId}&category_name=${...}`;
+    const handlePrintPDF = () => {
+      const typeMap: Record<string, string> = {
+        "Initial Tasks": "initial",
+        "Completed Tasks": "completed",
+        "Category": "category",
+        "Full Report": "full"
+      };
+      const backendType = typeMap[reportType] || "";
+      
+      let url = `http://localhost:8080/api/reports?type=${backendType}`;
+      if (reportType === "Category" && selectedCategoryId > 0) {
+        url += `&category_id=${selectedCategoryId}&category_name=${encodeURIComponent(selectedCategoryName)}`;
       }
-      window.open(url,'_blank')
+      window.open(url, '_blank');
     }
 
   return (
@@ -273,7 +283,12 @@ function Reports() {
           id="category_id"
           name="category_id"
           value={selectedCategoryId}
-          onChange={(e) => setSelectedCategoryId(parseInt(e.target.value) || 0)}
+          onChange={(e) => {
+            const id = parseInt(e.target.value) || 0;
+            setSelectedCategoryId(id);
+            const cat = categories.find(c => c.id === id);
+            setSelectedCategoryName(cat?.name || "");
+          }}
           className="m-3"
         >
           <option value={0}>Select Category</option>
