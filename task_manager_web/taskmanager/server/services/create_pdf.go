@@ -65,84 +65,47 @@ func GenerateReport(reportType, categoryName string, tasks []models.Task,w io.Wr
 	return pdf.Output(w)
 }
 
-func addTaskTable(pdf *gofpdf.Fpdf, tasks []models.Task) {
-	// Column widths
-	const (
-		colDesc    = 75.0
-		colDue     = 30.0
-		colStart   = 30.0
-		colFinish  = 30.0
-		colStatus  = 30.0
-		colNotes   = 70.0
-		lineHeight = 5.0
-	)
-
+func addTaskTable(pdf *gofpdf.Fpdf, task []models.Task) {
 	// Helper function to add table headers
 	addTableHeaders := func() {
 		pdf.SetFont("Arial", "B", 12)
 		pdf.SetFillColor(200, 200, 200)
-		pdf.CellFormat(colDesc, 10, "Task", "1", 0, "C", true, 0, "")
-		pdf.CellFormat(colDue, 10, "Due Date", "1", 0, "C", true, 0, "")
-		pdf.CellFormat(colStart, 10, "Start Date", "1", 0, "C", true, 0, "")
-		pdf.CellFormat(colFinish, 10, "Finish Date", "1", 0, "C", true, 0, "")
-		pdf.CellFormat(colStatus, 10, "Status", "1", 0, "C", true, 0, "")
-		pdf.CellFormat(colNotes, 10, "Notes", "1", 1, "C", true, 0, "")
-		pdf.SetFont("Arial", "", 10)
-	}
-
-	// Calculate how many lines a text needs for a given width
-	calcLines := func(text string, width float64) int {
-		if text == "" {
-			return 1
-		}
-		lines := pdf.SplitText(text, width)
-		if len(lines) == 0 {
-			return 1
-		}
-		return len(lines)
+		pdf.CellFormat(75, 10, "Task", "1", 0, "C", true, 0, "")
+		pdf.CellFormat(30, 10, "Due Date", "1", 0, "C", true, 0, "")
+		pdf.CellFormat(30, 10, "Start Date", "1", 0, "C", true, 0, "")
+		pdf.CellFormat(30, 10, "Finish Date", "1", 0, "C", true, 0, "")
+		pdf.CellFormat(30, 10, "Status", "1", 0, "C", true, 0, "")
+		pdf.CellFormat(70, 10, "Notes", "1", 1, "C", true, 0, "")
+		pdf.SetFont("Arial", "", 12)
 	}
 
 	// Add initial headers on first page
 	addTableHeaders()
 
-	for _, task := range tasks {
-		// Calculate row height based on content
-		descLines := calcLines(task.Description, colDesc-2)
-		notesLines := calcLines(task.Notes, colNotes-2)
-		maxLines := descLines
-		if notesLines > maxLines {
-			maxLines = notesLines
-		}
-		rowHeight := float64(maxLines) * lineHeight
-		if rowHeight < 10 {
-			rowHeight = 10
-		}
-
-		// Check if we need a new page
-		if pdf.GetY()+rowHeight > 190 {
+	// Add task rows with automatic page breaks and header repetition
+	for i, task := range task {
+		// Check if we need a page break
+		if i > 0 && i%15 == 0 {
 			pdf.AddPage()
 			addTableHeaders()
 		}
 
-		// Save starting position
-		x := pdf.GetX()
-		y := pdf.GetY()
+		// Truncate long text to prevent overflow
+		description := task.Description
+		if len(description) > 30 {
+			description = description[:27] + "..."
+		}
 
-		// Description (MultiCell for wrapping)
-		pdf.MultiCell(colDesc, lineHeight, task.Description, "1", "L", false)
-		
-		// Move to next column position
-		pdf.SetXY(x+colDesc, y)
-		pdf.CellFormat(colDue, rowHeight, task.DueDate, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colStart, rowHeight, task.StartDate, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colFinish, rowHeight, task.FinishDate, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colStatus, rowHeight, task.Status, "1", 0, "C", false, 0, "")
-		
-		// Notes (MultiCell for wrapping)
-		pdf.SetXY(x+colDesc+colDue+colStart+colFinish+colStatus, y)
-		pdf.MultiCell(colNotes, lineHeight, task.Notes, "1", "L", false)
+		notes := task.Notes
+		if len(notes) > 28 {
+			notes = notes[:25] + "..."
+		}
 
-		// Move to next row
-		pdf.SetY(y + rowHeight)
+		pdf.CellFormat(75, 10, description, "1", 0, "L", false, 0, "")
+		pdf.CellFormat(30, 10, task.DueDate, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(30, 10, task.StartDate, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(30, 10, task.FinishDate, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(30, 10, task.Status, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(70, 10, notes, "1", 1, "L", false, 0, "")
 	}
 }
