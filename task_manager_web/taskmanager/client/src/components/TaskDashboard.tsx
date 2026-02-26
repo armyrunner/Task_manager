@@ -16,7 +16,7 @@ import {
   cilTrash,
   cilPuzzle,
   cilCheckCircle,
-  cilSitemap,
+  //cilSitemap,
   cilHome,
   cilSpreadsheet,
 } from "@coreui/icons";
