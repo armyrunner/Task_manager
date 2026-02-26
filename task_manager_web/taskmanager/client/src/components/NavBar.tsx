@@ -1,6 +1,7 @@
 //import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./useAuth";
+import Profile from "./Profile";
 
 interface Props {
   title: string;
@@ -8,7 +9,7 @@ interface Props {
 
 function NavBar({ title}: Props) {
   const navigate = useNavigate();
-  const { isLoggedIn, logout, user } = useAuth();
+  const { isLoggedIn, logout } = useAuth();
 
   const handleAuthClick = () => {
     if (isLoggedIn) {
@@ -68,17 +69,18 @@ function NavBar({ title}: Props) {
           </ul>
 
           {/* Right side button */}
-          <div className="d-flex">
-            {isLoggedIn && <span className="nav-link">Welcome, {user?.username}</span>}
-            <button
-              onClick={handleAuthClick}
-              className={`btn ${
-                isLoggedIn ? "btn-outline-danger" : "btn-outline-success"
-              }`}
-              type="button"
-            >
-              {isLoggedIn ? "Sign Out" : "Sign In"}
-            </button>
+          <div className="d-flex align-items-center">
+            {isLoggedIn ? (
+              <Profile />
+            ) : (
+              <button
+                onClick={handleAuthClick}
+                className="btn btn-outline-success"
+                type="button"
+              >
+                Sign In
+              </button>
+            )}
           </div>
         </div>
       </div>

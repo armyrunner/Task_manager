@@ -37,11 +37,8 @@ const Profile = () => {
                 className="py-0 ps-2 pe-0"
                 style={{border:'none', background: 'transparent'}}
                 >
-                 <CAvatar
-                    src={userProfile.avatar}
-                    color="success"
-                    size="md"
-                 >
+                 <CAvatar color="success" size="md">
+                    {userProfile.avatar}
                  </CAvatar>
                 </CDropdownToggle>
                 <CDropdownMenu>
