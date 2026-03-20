@@ -1,9 +1,10 @@
 package services
 
 import (
+	"strings"
+
 	"github.com/armyrunner/task_manager/models"
 	"github.com/jung-kurt/gofpdf"
-	"strings"
 )
 
 func PDF_Initial_Tasks(task_incomplete map[string][]models.Task, task_completed []models.Task, file_name string) error {
@@ -14,7 +15,6 @@ func PDF_Initial_Tasks(task_incomplete map[string][]models.Task, task_completed 
 	// Title
 	pdf.Cell(40, 10, "Task Report")
 	pdf.Ln(12)
-	
 
 	// Current Tasks
 	// pdf.SetFont("Arial", "B", 14)
@@ -24,7 +24,7 @@ func PDF_Initial_Tasks(task_incomplete map[string][]models.Task, task_completed 
 	if len(task_incomplete) == 0 {
 		pdf.Cell(40, 10, "There are no current tasks to display")
 	} else {
-		for _, category := range models.CategoryOrder {	
+		for _, category := range models.CategoryOrder {
 			pdf.SetFont("Arial", "B", 14)
 			pdf.Cell(40, 10, " *** "+strings.ToUpper(category)+" TASKS *** ")
 			pdf.Ln(12)
@@ -94,10 +94,7 @@ func addTaskTable(pdf *gofpdf.Fpdf, task []models.Task) {
 		//	description = description[:22] + "..."
 		//}
 
-		notes := task.Notes
-		if len(notes) > 50 {
-			notes = notes[:45] + "..."
-		}
+		notes := truncateToWidth(pdf, task.Notes, 69)
 
 		pdf.CellFormat(75, 10, description, "1", 0, "L", false, 0, "")
 		pdf.CellFormat(30, 10, task.DueDate, "1", 0, "C", false, 0, "")
@@ -106,4 +103,17 @@ func addTaskTable(pdf *gofpdf.Fpdf, task []models.Task) {
 		pdf.CellFormat(30, 10, task.Status, "1", 0, "C", false, 0, "")
 		pdf.CellFormat(70, 10, notes, "1", 1, "L", false, 0, "")
 	}
+}
+
+func truncateToWidth(pdf *gofpdf.Fpdf, text string, maxWidth float64) string {
+
+	if pdf.GetStringWidth(text) <= maxWidth {
+		return text
+	}
+
+	for len(text) > 3 && pdf.GetStringWidth(text+"...") > maxWidth {
+		text = text[:len(text)-1]
+	}
+
+	return text + "..."
 }
