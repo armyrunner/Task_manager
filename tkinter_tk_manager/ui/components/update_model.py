@@ -205,8 +205,8 @@ class UpdateModel(ctk.CTkFrame):
         self.category_menu = DropDown(
             self.right_frame, 
             variable=self.category_var,
-            values=["Honey Due", "Washing Machine", "Homework"],
-            command=self.listMenu,
+            values=MOCK_CATEGORIES,
+            command=self.on_task_selected(MOCK_CATEGORIES),
             fg_color="#FFFFFF",
             text_color="#000000",
             button_color="#D3D3D3",
@@ -266,7 +266,7 @@ class UpdateModel(ctk.CTkFrame):
                 **BUTTON_STYLES["save"]
                 )
         
-        self.save_button.grid(row=10,column=0, columnspan=2,padx=20,pady=(5,20),sticky="e")
+        self.update_button.grid(row=10,column=0, columnspan=2,padx=20,pady=(5,20),sticky="e")
 
     def on_task_selected(self,task):
         # Called when an autocomplete suggestion is selected

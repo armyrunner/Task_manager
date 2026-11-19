@@ -1,6 +1,8 @@
 
 import customtkinter as ctk
+import tkinter as tk
 from ui.components.button import Button
+
 class AutoCompleteDropDown(ctk.CTkFrame):
 
     def __init__(self, parent, variable=None, 
@@ -18,7 +20,7 @@ class AutoCompleteDropDown(ctk.CTkFrame):
         self.after_id = None
         self.hide_after_id = None
 
-        self.variable = variable
+        self.variable = tk.StringVar()
 
         # ************************* SEARCH ENTRY **************************
 
@@ -100,13 +102,12 @@ class AutoCompleteDropDown(ctk.CTkFrame):
     
     # Return the selected task, or None
     def get_selected(self):
-        return self.selected_value.get()
+        return self.selected_value
     
     # Set the displayed task text
     def set(self,value):
-        self.selected_value = None
         self.selected_value = value
-        self.variable.set("")
+        self.variable.set(value or "")
         self._hide_popup()
 
     # Clear the search entry and selected task
@@ -133,7 +134,7 @@ class AutoCompleteDropDown(ctk.CTkFrame):
             self.after_cancel(self.after_id)
             self.after_id = None
 
-        query = self.get_variable.get().strip().casefold()
+        query = self.variable.get().strip().casefold()
 
         if not query:
             self._hide_popup()
@@ -149,7 +150,7 @@ class AutoCompleteDropDown(ctk.CTkFrame):
         self.after_id = None
 
         # Ignore outdated search queries
-        if query != self.get_variable.get().strip().casefold():
+        if query != self.variable.get().strip().casefold():
             return
         
         self.filtered_suggestions = [
@@ -172,23 +173,26 @@ class AutoCompleteDropDown(ctk.CTkFrame):
 
             self._show_popup()
             return
+        
         for index, task in enumerate(self.filtered_suggestions):
             suggestion_button = Button(
-                self.popup_frame,
+                parent=self.popup_frame,
                 text=str(task),
-                anchor="w",
+                command=lambda i=index: self._select(i),
+                color="transparent",
+                h_color=["#E6E6E6", "#3A3A3A"],
+                t_color=["#222222", "#EEEEEE"],
                 height=32,
-                fg_color="transparent",
-                hover_color=["#E6E6E6", "#3A3A3A"],
-                text_color=["#222222", "#EEEEEE"],
-                command=lambda i=index: self._select(i)
+                width=200,
+                font=ctk.CTkFont(family="Roboto", size=14),
+                anchor="w"
             )
 
             suggestion_button.grid(row=index,column=0,padx=3,pady=1,sticky="ew")
 
-            self._show_popup()
+        self._show_popup()
 
-    def _clear_popup_itesm(self):
+    def _clear_popup_items(self):
         for widget in self.popup_frame.winfo_children():
             widget.destroy()
 
@@ -219,20 +223,25 @@ class AutoCompleteDropDown(ctk.CTkFrame):
         if self.hide_after_id is not None:
             try:
                 self.after_cancel(self.hide_after_id)
-            except ctk.TclError:
+            except tk.TclError:
                 pass
+
+            self.hide_after_id = None
                 
-            self.popup.withdraw()
+        self.popup.withdraw()
 
         return "break"
     
-    def _schedule_hide(self):
+    def _schedule_hide(self, _event=None):
         if self.hide_after_id is not None:
-            self.after_cancel(self.hide_after_id)
-        
+            try:
+                self.after_cancel(self.hide_after_id)
+            except tk.TclError:
+                pass
+
         self.hide_after_id = self.after(
             150, 
-            self.hide_if_unclosed
+            self._hide_if_unfocused
         )
 
     def _hide_if_unfocused(self):
@@ -262,14 +271,14 @@ class AutoCompleteDropDown(ctk.CTkFrame):
         
         self.active_index = min(
             self.active_index + 1,
-            len(self.filtered_suggestions - 1)
+            len(self.filtered_suggestions) - 1
         )
 
         self._highlight_active()
 
         return "break"
     
-    def _move_up(self):
+    def _move_up(self, _event=None):
         if not self.filtered_suggestions:
             return "break"
         
@@ -299,7 +308,7 @@ class AutoCompleteDropDown(ctk.CTkFrame):
         
     def _confirm_selection(self,_event=None):
         if(0 <= self.active_index < len(self.filtered_suggestions)):
-            self.select(self.active_index)
+            self._select(self.active_index)
 
         elif len(self.filtered_suggestions) == 1:
             self._select(0)
@@ -335,14 +344,14 @@ class AutoCompleteDropDown(ctk.CTkFrame):
             return
         
         for callback_id in (self.after_id,self.hide_after_id):
-            if callback_id is None:
+            if callback_id is not None:
                 try:
                     self.after_cancel(callback_id)
                 except ctk.TclError:
                     pass
         try:
             self.popup.destroy()
-        except ctk.TclError:
+        except tk.TclError:
             pass
     
 
