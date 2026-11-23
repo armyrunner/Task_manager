@@ -12,6 +12,7 @@ from ui.components.dropdown import DropDown
 from pytablericons import TablerIcons, OutlineIcon
 from ui.components.add_model import AddModel
 from ui.components.update_model import UpdateModel
+from ui.components.delete_model import DeleteModel
 
 BUTTON_STYLES = {
     "primary": {
@@ -208,7 +209,12 @@ class SideBar:
     # create delete task button
 
     def on_delete(self):
-        print("delete a task")
+        self.delete_model = DeleteModel(self.content_frame)
+
+        if hasattr(self, "delete model"):
+            self.delete_model.destroy()
+
+        self.delete_model.grid(row=0, column=0, sticky="nsew", padx=20,pady=20)
 
     def listTask(self):
         print("Selected Task")
