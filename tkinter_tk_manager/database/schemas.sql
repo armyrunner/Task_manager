@@ -21,6 +21,17 @@ CREATE TABLE IF NOT EXISTS completed_tasks(
     notes TEXT
     );
 
+CREATE TABLE IF NOT EXISTS goals(
+    id INTEGER PRIMARY KEY AUTOINCREMENT
+    name TEXT,
+    type TEXT,
+    target_date TEXT,
+    finish_date TEXT,
+    status TEXT,
+    notes TEXT,
+
+)
+
 -- Column migrations are handled in db.go runMigrations()
 -- ALTER TABLE initial_tasks ADD COLUMN category TEXT;
 -- ALTER TABLE completed_tasks ADD COLUMN category TEXT;
